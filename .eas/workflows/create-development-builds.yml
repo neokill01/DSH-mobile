@@ -1,0 +1,33 @@
+name: Create Development Builds
+
+on:
+  push:
+    branches:
+      - develop
+      - feature/**
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build_android:
+    name: Build Android Development
+    type: build
+    params:
+      platform: android
+      profile: development-android
+
+  build_ios_simulator:
+    name: Build iOS Simulator
+    type: build
+    params:
+      platform: ios
+      profile: development-simulator
+
+  build_ios_device:
+    name: Build iOS Device
+    type: build
+    params:
+      platform: ios
+      profile: development-device
