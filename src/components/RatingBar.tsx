@@ -2,7 +2,7 @@
 
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { RATINGS } from "@/constants/ratings";
-import { Radius } from "@/constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 
 interface Props {
   onRate: (rating: number) => void;
@@ -35,34 +35,31 @@ export function RatingBar({ onRate, disabled }: Props) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    gap: 10,
+    gap: Spacing.md,
     width: "100%",
   },
   btn: {
     flex: 1,
     borderRadius: Radius.lg,
-    paddingVertical: 14,
+    paddingVertical: Spacing.lg,
     alignItems: "center",
-    gap: 2,
-    shadowColor: "#1A1A2E",
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    gap: Spacing.xs,
+    ...Shadow.button,
   },
   pressed: {
-    opacity: 0.75,
-    transform: [{ scale: 0.97 }],
+    opacity: 0.85,
+    transform: [{ scale: 0.95 }],
   },
   disabled: {
     opacity: 0.5,
   },
   label: {
+    ...Typography.body,
     color: "#FFFFFF",
-    fontSize: 16,
     fontWeight: "700",
   },
   hint: {
+    ...Typography.label,
     color: "rgba(255,255,255,0.7)",
     fontSize: 10,
   },

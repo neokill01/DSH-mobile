@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import * as Speech from "expo-speech";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Radius } from "@/constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import type { Word } from "@/types/database";
 
 interface Props {
@@ -27,7 +27,7 @@ export function WordCard({ word, flipped, onFlip }: Props) {
   useEffect(() => {
     Animated.timing(anim, {
       toValue: flipped ? 1 : 0,
-      duration: 280,
+      duration: 600,
       useNativeDriver: true,
     }).start();
   }, [flipped, anim]);
@@ -114,15 +114,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: Radius.xl,
-    padding: 24,
+    padding: Spacing.xxl,
     backfaceVisibility: "hidden",
     backgroundColor: Colors.surface,
     overflow: "hidden",
-    shadowColor: "#1A1A2E",
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
+    ...Shadow.lifted,
   },
   back: {
     backgroundColor: Colors.surfaceAlt,
@@ -158,13 +154,12 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   phonetic: {
-    fontSize: 17,
-    color: Colors.textTertiary,
-    marginTop: 8,
+    ...Typography.phonetic,
+    marginTop: Spacing.sm,
     fontStyle: "italic",
   },
   speakBtn: {
-    marginTop: 18,
+    marginTop: Spacing.xl,
     width: 52,
     height: 52,
     borderRadius: 26,
@@ -180,23 +175,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   defRow: {
-    marginBottom: 14,
+    marginBottom: Spacing.lg,
     width: "100%",
   },
   defHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
-    gap: 8,
+    marginBottom: Spacing.xs,
+    gap: Spacing.sm,
   },
   posBadge: {
     backgroundColor: Colors.primaryBg,
     borderRadius: Radius.sm,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
   pos: {
-    fontSize: 12,
+    ...Typography.label,
     color: Colors.primary,
     fontWeight: "700",
   },
@@ -207,28 +202,28 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   example: {
-    fontSize: 14,
+    ...Typography.caption,
     color: Colors.textSecondary,
     fontStyle: "italic",
-    marginTop: 4,
+    marginTop: Spacing.xs,
     lineHeight: 21,
   },
   translation: {
-    fontSize: 13,
+    ...Typography.label,
     color: Colors.textMuted,
-    marginTop: 2,
+    marginTop: Spacing.xs,
   },
 
   // Hint
   hintRow: {
     position: "absolute",
-    bottom: 18,
+    bottom: Spacing.xl,
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: Spacing.xs,
   },
   hint: {
-    fontSize: 12,
+    ...Typography.label,
     color: Colors.textHint,
   },
 });

@@ -14,11 +14,19 @@ import { router, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { getRepository } from "@/lib/repository";
-import { Colors, Spacing, Radius, Shadow } from "@/constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import type { Stats, WordBook } from "@/types/database";
 
 const GOAL_NEW = 20;
 const GOAL_REVIEW = 100;
+
+// 获取问候语（使用 Ionicons）
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return { text: "早上好", icon: "sunny" as const, color: Colors.gold };
+  if (hour < 18) return { text: "下午好", icon: "partly-sunny" as const, color: Colors.gold };
+  return { text: "晚上好", icon: "moon" as const, color: Colors.primary };
+};
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -60,6 +68,7 @@ export default function HomeScreen() {
     book && stats ? Math.min(100, (stats.totalLearned / book.wordCount) * 100) : 0;
   const newPct = stats ? Math.min(100, (stats.todayNew / GOAL_NEW) * 100) : 0;
   const reviewPct = stats ? Math.min(100, (stats.todayReview / GOAL_REVIEW) * 100) : 0;
+  const greeting = getGreeting();
 
   if (loading) {
     return (
@@ -79,15 +88,18 @@ export default function HomeScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* 顶部：App 名 + 连续打卡 */}
+        {/* 顶部：问候 + 连续打卡 */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>早上好 👋</Text>
+            <View style={styles.greetingRow}>
+              <Ionicons name={greeting.icon} size={18} color={greeting.color} />
+              <Text style={styles.greeting}>{greeting.text}</Text>
+            </View>
             <Text style={styles.appName}>词记</Text>
           </View>
           <View style={styles.streakBadge}>
-            <Ionicons name="flame" size={16} color={Colors.warning} />
-            <Text style={styles.streakText}>连续 {stats?.streak ?? 0} 天</Text>
+            <Ionicons name="flame" size={16} color={Colors.gold} />
+            <Text style={styles.streakText}>{stats?.streak ?? 0}天</Text>
           </View>
         </View>
 
@@ -97,7 +109,7 @@ export default function HomeScreen() {
             <View style={styles.bookIconWrap}>
               <Ionicons name="book" size={22} color={Colors.primary} />
             </View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
+            <View style={styles.bookInfo}>
               <Text style={styles.bookTitle}>{book?.title}</Text>
               <Text style={styles.bookDesc}>{book?.description}</Text>
             </View>
@@ -118,10 +130,13 @@ export default function HomeScreen() {
 
         {/* 今日目标 */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>今日目标</Text>
+          <View style={styles.sectionTitleRow}>
+            <Ionicons name="bar-chart" size={18} color={Colors.primary} />
+            <Text style={styles.sectionTitle}>今日目标</Text>
+          </View>
           <View style={styles.goalItem}>
             <View style={styles.goalHeader}>
-              <View style={[styles.goalDot, { backgroundColor: Colors.amber }]} />
+              <View style={[styles.goalDot, { backgroundColor: Colors.gold }]} />
               <Text style={styles.goalLabel}>新词</Text>
               <Text style={styles.goalValue}>
                 {stats?.todayNew ?? 0} / {GOAL_NEW}
@@ -133,7 +148,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.goalItem}>
             <View style={styles.goalHeader}>
-              <View style={[styles.goalDot, { backgroundColor: Colors.green }]} />
+              <View style={[styles.goalDot, { backgroundColor: Colors.success }]} />
               <Text style={styles.goalLabel}>复习</Text>
               <Text style={styles.goalValue}>
                 {stats?.todayReview ?? 0} / {GOAL_REVIEW}
@@ -152,17 +167,17 @@ export default function HomeScreen() {
             onPress={() => router.push({ pathname: "/review", params: { mode: "new" } })}
           >
             <Ionicons name="sparkles" size={20} color="#FFF" />
-            <Text style={styles.actionPrimaryText}>学习新词</Text>
-            <Text style={styles.actionPrimarySub}>还剩 {stats?.newCount ?? 0} 个未学</Text>
+            <Text style={styles.actionPrimaryText}>学新词</Text>
+            <Text style={styles.actionPrimarySub}>还剩 {stats?.newCount ?? 0} 个</Text>
           </Pressable>
           <Pressable
             style={[styles.actionBtn, styles.actionSecondary]}
             onPress={() => router.push({ pathname: "/review", params: { mode: "review" } })}
           >
-            <Ionicons name="refresh" size={20} color={Colors.primary} />
-            <Text style={styles.actionSecondaryText}>复习</Text>
+            <Ionicons name="refresh" size={20} color={Colors.accent} />
+            <Text style={styles.actionSecondaryText}>开始复习</Text>
             <Text style={styles.actionSecondarySub}>
-              {stats?.dueCount ?? 0} 个词待复习
+              待复习 {stats?.dueCount ?? 0}
             </Text>
           </Pressable>
         </View>
@@ -187,7 +202,7 @@ export default function HomeScreen() {
                     color={b.id === book?.id ? Colors.primary : Colors.textHint}
                   />
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={styles.bookItemContent}>
                   <Text style={styles.bookItemTitle}>{b.title}</Text>
                   <Text style={styles.bookItemMeta}>
                     {b.level} · {b.wordCount} 词
@@ -218,31 +233,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 20,
+    marginBottom: Spacing.xl,
+  },
+  greetingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   greeting: {
-    fontSize: 14,
-    color: Colors.textTertiary,
-    marginBottom: 2,
+    ...Typography.caption,
   },
   appName: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: Colors.text,
-    letterSpacing: -0.5,
+    ...Typography.h1,
+    color: Colors.primary,
   },
   streakBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    backgroundColor: Colors.warningBg,
+    gap: Spacing.xs,
+    backgroundColor: Colors.goldBg,
     borderRadius: Radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   streakText: {
-    color: Colors.warning,
-    fontSize: 13,
+    ...Typography.label,
+    color: Colors.gold,
     fontWeight: "700",
   },
 
@@ -251,7 +268,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
-    marginBottom: 14,
+    marginBottom: Spacing.lg,
     ...Shadow.card,
   },
   bookCard: {
@@ -261,7 +278,7 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 14,
+    marginBottom: Spacing.lg,
   },
   bookIconWrap: {
     width: 42,
@@ -271,142 +288,147 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  bookInfo: {
+    flex: 1,
+    marginLeft: Spacing.md,
+  },
   bookTitle: {
-    fontSize: 16,
+    ...Typography.body,
     fontWeight: "700",
-    color: Colors.text,
   },
   bookDesc: {
-    fontSize: 12,
+    ...Typography.label,
     color: Colors.textMuted,
-    marginTop: 2,
+    marginTop: Spacing.xs,
   },
   switchBtn: {
     backgroundColor: Colors.primaryBg,
     borderRadius: Radius.sm,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   switchBtnText: {
+    ...Typography.label,
     color: Colors.primary,
-    fontSize: 13,
     fontWeight: "600",
   },
 
   // Progress
   progressTrack: {
     height: 8,
-    borderRadius: 4,
+    borderRadius: Radius.pill,
     backgroundColor: Colors.divider,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    borderRadius: 4,
+    borderRadius: Radius.pill,
     backgroundColor: Colors.primary,
   },
   progressInfo: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
   progressText: {
-    fontSize: 12,
-    color: Colors.textTertiary,
+    ...Typography.caption,
   },
   masteredText: {
-    fontSize: 12,
+    ...Typography.caption,
     color: Colors.success,
     fontWeight: "600",
   },
 
   // Goals
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: Colors.text,
-    marginBottom: 14,
+    ...Typography.h3,
   },
   goalItem: {
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   goalHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
+    marginBottom: Spacing.sm,
   },
   goalDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
   goalLabel: {
-    fontSize: 13,
+    ...Typography.caption,
     color: Colors.textSecondary,
     flex: 1,
   },
   goalValue: {
-    fontSize: 13,
+    ...Typography.caption,
     color: Colors.text,
     fontWeight: "600",
   },
   goalTrack: {
     height: 6,
-    borderRadius: 3,
+    borderRadius: Radius.pill,
     backgroundColor: Colors.divider,
     overflow: "hidden",
   },
   goalFillNew: {
     height: "100%",
-    borderRadius: 3,
-    backgroundColor: Colors.amber,
+    borderRadius: Radius.pill,
+    backgroundColor: Colors.gold,
   },
   goalFillReview: {
     height: "100%",
-    borderRadius: 3,
-    backgroundColor: Colors.green,
+    borderRadius: Radius.pill,
+    backgroundColor: Colors.success,
   },
 
   // Actions
   actions: {
     flexDirection: "row",
-    gap: 12,
-    marginTop: 6,
+    gap: Spacing.md,
+    marginTop: Spacing.sm,
   },
   actionBtn: {
-    flex:1,
+    flex: 1,
     borderRadius: Radius.lg,
-    paddingVertical: 18,
+    paddingVertical: Spacing.xl,
     alignItems: "center",
-    gap: 4,
+    gap: Spacing.xs,
   },
   actionPrimary: {
     backgroundColor: Colors.primary,
-    ...Shadow.lifted,
+    ...Shadow.button,
   },
   actionSecondary: {
     backgroundColor: Colors.surface,
     borderWidth: 1.5,
-    borderColor: Colors.primaryBg,
+    borderColor: Colors.accentBg,
   },
   actionPrimaryText: {
+    ...Typography.body,
     color: "#FFFFFF",
-    fontSize: 17,
     fontWeight: "700",
   },
   actionPrimarySub: {
+    ...Typography.label,
     color: "rgba(255,255,255,0.7)",
-    fontSize: 12,
   },
   actionSecondaryText: {
-    color: Colors.text,
-    fontSize: 17,
+    ...Typography.body,
+    color: Colors.accent,
     fontWeight: "700",
   },
   actionSecondarySub: {
+    ...Typography.label,
     color: Colors.textMuted,
-    fontSize: 12,
   },
 
   // Modal
@@ -417,8 +439,8 @@ const styles = StyleSheet.create({
   },
   modalSheet: {
     backgroundColor: Colors.surface,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
     padding: Spacing.xl,
     paddingBottom: 40,
   },
@@ -428,36 +450,36 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: Colors.divider,
     alignSelf: "center",
-    marginBottom: 14,
+    marginBottom: Spacing.lg,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: Colors.text,
-    marginBottom: 14,
+    ...Typography.h3,
+    marginBottom: Spacing.lg,
   },
   bookItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
     borderRadius: Radius.md,
-    marginBottom: 6,
+    marginBottom: Spacing.sm,
   },
   bookItemActive: {
     backgroundColor: Colors.primaryBg,
   },
   bookItemLeft: {
-    marginRight: 10,
+    marginRight: Spacing.md,
+  },
+  bookItemContent: {
+    flex: 1,
   },
   bookItemTitle: {
-    fontSize: 15,
+    ...Typography.body,
     fontWeight: "600",
-    color: Colors.text,
   },
   bookItemMeta: {
-    fontSize: 12,
+    ...Typography.label,
     color: Colors.textMuted,
-    marginTop: 2,
+    marginTop: Spacing.xs,
   },
 });

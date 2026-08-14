@@ -7,11 +7,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { getRepository } from "@/lib/repository";
 import { dateStr } from "@/lib/statsUtil";
-import { Colors, Spacing, Radius, Shadow } from "@/constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
+import StatCard from "@/components/StatCard";
+import WeeklyChart from "@/components/WeeklyChart";
 import type { DailyCount, Stats } from "@/types/database";
 
 const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
-const BAR_MAX = 120;
 
 export default function StatsScreen() {
   const insets = useSafeAreaInsets();
@@ -26,13 +27,19 @@ export default function StatsScreen() {
     }, []),
   );
 
-  const maxCount = Math.max(1, ...daily.map((d) => d.newWords + d.reviews));
+  // 转换数据格式
+  const chartData = daily.map((d) => {
+    const day = new Date(`${d.date}T00:00:00`);
+    const isToday = d.date === dateStr(new Date());
+    return {
+      day: isToday ? "今" : WEEKDAYS[day.getDay()],
+      newWords: d.newWords,
+      reviews: d.reviews,
+    };
+  });
 
-  const summaryItems = [
-    { value: stats?.totalLearned ?? 0, label: "累计学习", icon: "library-outline" as const, color: Colors.primary },
-    { value: stats?.mastered ?? 0, label: "已掌握", icon: "checkmark-circle-outline" as const, color: Colors.success },
-    { value: stats?.streak ?? 0, label: "连续天数", icon: "flame-outline" as const, color: Colors.warning },
-  ];
+  const totalLearned = daily.reduce((s, d) => s + d.newWords, 0);
+  const totalReviews = daily.reduce((s, d) => s + d.reviews, 0);
 
   return (
     <ScrollView
@@ -45,77 +52,58 @@ export default function StatsScreen() {
     >
       <Text style={styles.title}>学习统计</Text>
 
-      {/* 概览数字 */}
+      {/* 概览卡片 */}
       <View style={styles.summaryRow}>
-        {summaryItems.map((item) => (
-          <View key={item.label} style={styles.summaryCard}>
-            <View style={[styles.summaryIconWrap, { backgroundColor: item.color + "18" }]}>
-              <Ionicons name={item.icon} size={18} color={item.color} />
-            </View>
-            <Text style={styles.summaryNum}>{item.value}</Text>
-            <Text style={styles.summaryLabel}>{item.label}</Text>
-          </View>
-        ))}
+        <StatCard
+          iconName="book"
+          value={stats?.totalLearned ?? 0}
+          label="已学习"
+          color={Colors.primary}
+        />
+        <StatCard
+          iconName="checkmark-circle"
+          value={stats?.mastered ?? 0}
+          label="已掌握"
+          color={Colors.success}
+        />
+        <StatCard
+          iconName="flame"
+          value={stats?.streak ?? 0}
+          label="连续天数"
+          color={Colors.gold}
+        />
       </View>
 
-      {/* 近 7 天柱状图 */}
-      <View style={styles.card}>
-        <View style={styles.cardTitleRow}>
-          <Ionicons name="bar-chart-outline" size={16} color={Colors.text} />
-          <Text style={styles.cardTitle}>近 7 天</Text>
-        </View>
-        <View style={styles.chart}>
-          {daily.map((d) => {
-            const total = d.newWords + d.reviews;
-            const h = Math.max(4, (total / maxCount) * BAR_MAX);
-            const day = new Date(`${d.date}T00:00:00`);
-            const isToday = d.date === dateStr(new Date());
-            return (
-              <View key={d.date} style={styles.barCol}>
-                <View style={[styles.bar, { height: h }]}>
-                  <View
-                    style={[
-                      styles.barNew,
-                      { height: `${(d.newWords / Math.max(1, total)) * 100}%` },
-                    ]}
-                  />
-                  <View style={[styles.barReview, { flex: 1 }]} />
-                </View>
-                <Text style={[styles.barLabel, isToday && styles.barLabelToday]}>
-                  {isToday ? "今" : WEEKDAYS[day.getDay()]}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-        <View style={styles.legend}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: Colors.amber }]} />
-            <Text style={styles.legendText}>新词</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: Colors.green }]} />
-            <Text style={styles.legendText}>复习</Text>
-          </View>
-        </View>
-      </View>
+      {/* 柱状图 */}
+      <WeeklyChart data={chartData} />
 
       {/* 本周小结 */}
       <View style={styles.card}>
-        <View style={styles.cardTitleRow}>
-          <Ionicons name="document-text-outline" size={16} color={Colors.text} />
-          <Text style={styles.cardTitle}>本周小结</Text>
+        <View style={styles.sectionTitleRow}>
+          <Ionicons name="document-text" size={18} color={Colors.primary} />
+          <Text style={styles.sectionTitle}>本周总结</Text>
         </View>
-        <Text style={styles.summaryText}>
-          本周共学习{" "}
-          {daily.reduce((s, d) => s + d.newWords + d.reviews, 0)} 次，其中新学{" "}
-          {daily.reduce((s, d) => s + d.newWords, 0)} 词。
-        </Text>
-        <View style={styles.tipBox}>
-          <Ionicons name="bulb-outline" size={14} color={Colors.warning} />
-          <Text style={styles.summaryHint}>
-            坚持每天复习，遗忘曲线会越来越平缓
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>新词学习</Text>
+          <Text style={styles.summaryValue}>{totalLearned} 个</Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>复习完成</Text>
+          <Text style={styles.summaryValue}>{totalReviews} 次</Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>掌握率</Text>
+          <Text style={[styles.summaryValue, { color: Colors.success }]}>
+            {stats?.totalLearned
+              ? Math.round(((stats?.mastered ?? 0) / stats.totalLearned) * 100)
+              : 0}
+            %
           </Text>
+        </View>
+
+        <View style={styles.tipBox}>
+          <Ionicons name="bulb" size={14} color={Colors.gold} />
+          <Text style={styles.tipText}>坚持就是胜利！每天进步一点点</Text>
         </View>
       </View>
     </ScrollView>
@@ -126,81 +114,68 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: Spacing.xl },
   title: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: Colors.text,
-    marginBottom: 18,
-    letterSpacing: -0.5,
+    ...Typography.h1,
+    color: Colors.primary,
+    marginBottom: Spacing.xl,
   },
 
   // Summary cards
-  summaryRow: { flexDirection: "row", gap: 10, marginBottom: 14 },
-  summaryCard: {
-    flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
-    paddingVertical: 16,
-    alignItems: "center",
-    gap: 6,
-    ...Shadow.card,
+  summaryRow: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
   },
-  summaryIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  summaryNum: { fontSize: 24, fontWeight: "800", color: Colors.text },
-  summaryLabel: { fontSize: 12, color: Colors.textMuted },
 
   // Card
   card: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
-    marginBottom: 14,
+    marginBottom: Spacing.lg,
     ...Shadow.card,
   },
-  cardTitleRow: {
+  sectionTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginBottom: 14,
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
-  cardTitle: { fontSize: 15, fontWeight: "700", color: Colors.text },
-
-  // Chart
-  chart: { flexDirection: "row", alignItems: "flex-end", height: BAR_MAX + 24 },
-  barCol: { flex: 1, alignItems: "center" },
-  bar: {
-    width: 22,
-    borderRadius: 6,
-    backgroundColor: Colors.divider,
-    overflow: "hidden",
-    justifyContent: "flex-end",
+  sectionTitle: {
+    ...Typography.h3,
   },
-  barNew: { width: "100%", backgroundColor: Colors.amber },
-  barReview: { width: "100%", backgroundColor: Colors.green },
-  barLabel: { fontSize: 11, color: Colors.textMuted, marginTop: 6 },
-  barLabelToday: { color: Colors.primary, fontWeight: "700" },
-
-  // Legend
-  legend: { flexDirection: "row", gap: 16, marginTop: 14 },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { fontSize: 12, color: Colors.textTertiary },
 
   // Summary
-  summaryText: { fontSize: 14, color: Colors.textSecondary, lineHeight: 22 },
+  summaryItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+  },
+  summaryLabel: {
+    ...Typography.body,
+    color: Colors.textSecondary,
+  },
+  summaryValue: {
+    ...Typography.body,
+    fontWeight: "600",
+    color: Colors.text,
+  },
+
+  // Tip
   tipBox: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    backgroundColor: Colors.warningBg,
+    gap: Spacing.sm,
+    backgroundColor: Colors.goldBg,
     borderRadius: Radius.sm,
-    padding: 10,
-    marginTop: 12,
+    padding: Spacing.md,
+    marginTop: Spacing.lg,
   },
-  summaryHint: { fontSize: 12, color: Colors.textTertiary, flex: 1, lineHeight: 18 },
+  tipText: {
+    ...Typography.caption,
+    color: Colors.gold,
+    flex: 1,
+  },
 });

@@ -8,7 +8,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { ACHIEVEMENTS } from "@/constants/achievements";
 import { useAuth } from "@/lib/auth";
 import { getRepository } from "@/lib/repository";
-import { Colors, Spacing, Radius, Shadow } from "@/constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
+import AchievementGrid from "@/components/AchievementGrid";
 import type { AchievementStatus } from "@/lib/repository";
 
 export default function ProfileScreen() {
@@ -28,6 +29,15 @@ export default function ProfileScreen() {
   const unlocked = (code: string) =>
     achievements.find((a) => a.code === code)?.unlocked ?? false;
 
+  // 转换成就数据格式
+  const achievementData = ACHIEVEMENTS.map((a) => ({
+    id: a.code,
+    iconName: a.iconName,
+    title: a.title,
+    description: a.description,
+    unlocked: unlocked(a.code),
+  }));
+
   return (
     <ScrollView
       style={styles.container}
@@ -39,15 +49,20 @@ export default function ProfileScreen() {
     >
       <Text style={styles.title}>我的</Text>
 
-      {/* 账号/模式 */}
+      {/* 用户信息卡片 */}
       <View style={[styles.card, styles.profileCard]}>
         <View style={styles.avatarWrap}>
           <Ionicons name="person" size={28} color={Colors.primary} />
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={styles.userInfo}>
           <View style={styles.modeBadge}>
+            <Ionicons
+              name={mode === "supabase" ? "cloud" : "phone-portrait"}
+              size={12}
+              color={Colors.primary}
+            />
             <Text style={styles.modeBadgeText}>
-              {mode === "supabase" ? "☁️ 云端模式" : "📱 本地演示"}
+              {mode === "supabase" ? "云端模式" : "本地演示"}
             </Text>
           </View>
           <Text style={styles.accountText}>
@@ -65,51 +80,29 @@ export default function ProfileScreen() {
 
       {/* 每日目标 */}
       <View style={styles.card}>
-        <View style={styles.cardTitleRow}>
-          <Ionicons name="flag-outline" size={16} color={Colors.text} />
-          <Text style={styles.cardTitle}>每日目标</Text>
+        <View style={styles.sectionTitleRow}>
+          <Ionicons name="flag" size={18} color={Colors.primary} />
+          <Text style={styles.sectionTitle}>每日目标</Text>
         </View>
         <View style={styles.goalItem}>
           <View style={styles.goalLeft}>
-            <View style={[styles.goalDot, { backgroundColor: Colors.amber }]} />
-            <Text style={styles.goalLabel}>新词</Text>
+            <View style={[styles.goalDot, { backgroundColor: Colors.gold }]} />
+            <Text style={styles.goalLabel}>新词目标</Text>
           </View>
-          <Text style={styles.goalValue}>20 / 天</Text>
+          <Text style={styles.goalValue}>20 个/天</Text>
         </View>
         <View style={styles.goalItem}>
           <View style={styles.goalLeft}>
-            <View style={[styles.goalDot, { backgroundColor: Colors.green }]} />
-            <Text style={styles.goalLabel}>复习</Text>
+            <View style={[styles.goalDot, { backgroundColor: Colors.success }]} />
+            <Text style={styles.goalLabel}>复习目标</Text>
           </View>
-          <Text style={styles.goalValue}>100 / 天</Text>
+          <Text style={styles.goalValue}>100 个/天</Text>
         </View>
-        <Text style={styles.cardHint}>目标可在后续版本中自定义</Text>
+        <Text style={styles.hint}>目标可在后续版本中自定义</Text>
       </View>
 
       {/* 成就 */}
-      <View style={styles.card}>
-        <View style={styles.cardTitleRow}>
-          <Ionicons name="trophy-outline" size={16} color={Colors.text} />
-          <Text style={styles.cardTitle}>成就</Text>
-        </View>
-        <View style={styles.achievementGrid}>
-          {ACHIEVEMENTS.map((a) => {
-            const isUnlocked = unlocked(a.code);
-            return (
-              <View
-                key={a.code}
-                style={[styles.achievementItem, !isUnlocked && styles.achievementLocked]}
-              >
-                <Text style={styles.achievementIcon}>{a.icon}</Text>
-                <Text style={styles.achievementTitle}>{a.title}</Text>
-                <Text style={styles.achievementDesc} numberOfLines={2}>
-                  {a.description}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      </View>
+      <AchievementGrid achievements={achievementData} />
 
       <Text style={styles.footer}>词记 WordNest · v0.1.0</Text>
     </ScrollView>
@@ -120,11 +113,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: Spacing.xl },
   title: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: Colors.text,
-    marginBottom: 18,
-    letterSpacing: -0.5,
+    ...Typography.h1,
+    color: Colors.primary,
+    marginBottom: Spacing.xl,
   },
 
   // Card
@@ -132,13 +123,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
-    marginBottom: 14,
+    marginBottom: Spacing.lg,
     ...Shadow.card,
   },
   profileCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: Spacing.lg,
   },
   avatarWrap: {
     width: 52,
@@ -148,16 +139,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  userInfo: {
+    flex: 1,
+  },
   modeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
     alignSelf: "flex-start",
     backgroundColor: Colors.primaryBg,
     borderRadius: Radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginBottom: 6,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
-  modeBadgeText: { color: Colors.primary, fontSize: 12, fontWeight: "600" },
-  accountText: { fontSize: 14, color: Colors.textSecondary },
+  modeBadgeText: {
+    ...Typography.label,
+    color: Colors.primary,
+    fontWeight: "600",
+  },
+  accountText: {
+    ...Typography.caption,
+  },
   logoutBtn: {
     width: 40,
     height: 40,
@@ -168,60 +171,51 @@ const styles = StyleSheet.create({
   },
 
   // Goals
-  cardTitleRow: {
+  sectionTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginBottom: 14,
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
-  cardTitle: { fontSize: 15, fontWeight: "700", color: Colors.text },
+  sectionTitle: {
+    ...Typography.h3,
+  },
   goalItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: Spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderLight,
   },
   goalLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: Spacing.md,
   },
   goalDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
   },
-  goalLabel: { fontSize: 14, color: Colors.textSecondary },
-  goalValue: { fontSize: 14, color: Colors.text, fontWeight: "600" },
-  cardHint: { fontSize: 11, color: Colors.textMuted, marginTop: 10 },
-
-  // Achievements
-  achievementGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
+  goalLabel: {
+    ...Typography.body,
+    color: Colors.textSecondary,
   },
-  achievementItem: {
-    width: "30%",
-    flexGrow: 1,
-    backgroundColor: Colors.surfaceAlt,
-    borderRadius: Radius.md,
-    padding: 10,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
+  goalValue: {
+    ...Typography.body,
+    fontWeight: "600",
   },
-  achievementLocked: { opacity: 0.35 },
-  achievementIcon: { fontSize: 24, marginBottom: 4 },
-  achievementTitle: { fontSize: 12, fontWeight: "600", color: Colors.text },
-  achievementDesc: { fontSize: 10, color: Colors.textMuted, marginTop: 2, textAlign: "center" },
+  hint: {
+    ...Typography.label,
+    color: Colors.textMuted,
+    marginTop: Spacing.md,
+  },
 
   footer: {
-    textAlign: "center",
-    fontSize: 11,
+    ...Typography.label,
     color: Colors.textHint,
-    marginTop: 8,
+    textAlign: "center",
+    marginTop: Spacing.lg,
   },
 });

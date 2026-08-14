@@ -15,7 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { RatingBar } from "@/components/RatingBar";
 import { WordCard } from "@/components/WordCard";
 import { getRepository } from "@/lib/repository";
-import { Colors, Spacing, Radius, Shadow } from "@/constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import type { StoredCard, Word } from "@/types/database";
 
 type Mode = "new" | "review";
@@ -119,7 +119,9 @@ export default function ReviewScreen() {
   if (done || queue.length === 0) {
     return (
       <View style={[styles.center, { paddingTop: insets.top }]}>
-        <Text style={styles.doneIcon}>🎉</Text>
+        <View style={styles.doneIconWrap}>
+          <Ionicons name="checkmark-done" size={48} color={Colors.success} />
+        </View>
         <Text style={styles.doneTitle}>{queue.length === 0 ? "暂无任务" : "本组完成！"}</Text>
         <Text style={styles.doneDesc}>
           {mode === "new"
@@ -196,7 +198,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: Colors.background,
     padding: Spacing.xxl,
-    gap: 6,
+    gap: Spacing.sm,
   },
 
   // Top bar
@@ -204,7 +206,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: Spacing.md,
   },
   closeBtn: {
     width: 36,
@@ -219,26 +221,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   progressLabel: {
-    fontSize: 13,
-    color: Colors.textTertiary,
+    ...Typography.caption,
   },
   progressCount: {
-    fontSize: 16,
-    color: Colors.text,
+    ...Typography.body,
     fontWeight: "700",
   },
 
   // Progress
   progressTrack: {
     height: 6,
-    borderRadius: 3,
+    borderRadius: Radius.pill,
     backgroundColor: Colors.divider,
     overflow: "hidden",
-    marginBottom: 20,
+    marginBottom: Spacing.xl,
   },
   progressFill: {
     height: "100%",
-    borderRadius: 3,
+    borderRadius: Radius.pill,
     backgroundColor: Colors.primary,
   },
 
@@ -253,44 +253,51 @@ const styles = StyleSheet.create({
   flipHintBox: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: Spacing.sm,
     backgroundColor: Colors.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.pill,
     ...Shadow.soft,
   },
   flipHint: {
-    fontSize: 13,
+    ...Typography.caption,
     color: Colors.textMuted,
   },
 
   // Done / Error
-  doneIcon: { fontSize: 56, marginBottom: 8 },
-  doneTitle: { fontSize: 24, fontWeight: "800", color: Colors.text },
+  doneIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.successBg,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.lg,
+  },
+  doneTitle: { ...Typography.h2 },
   doneDesc: {
-    fontSize: 14,
-    color: Colors.textTertiary,
+    ...Typography.caption,
     textAlign: "center",
-    marginTop: 8,
-    marginBottom: 24,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xxl,
     lineHeight: 22,
   },
   errorText: {
-    fontSize: 14,
+    ...Typography.caption,
     color: Colors.danger,
     textAlign: "center",
-    marginTop: 12,
-    marginBottom: 16,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   retryBtn: {
     backgroundColor: Colors.primary,
     borderRadius: Radius.md,
-    paddingHorizontal: 32,
-    paddingVertical: 13,
-    ...Shadow.card,
+    paddingHorizontal: Spacing.xxxl,
+    paddingVertical: Spacing.lg,
+    ...Shadow.button,
   },
-  retryText: { color: "#FFFFFF", fontSize: 15, fontWeight: "600" },
-  backBtn: { marginTop: 12, padding: 8 },
-  backText: { color: Colors.textTertiary, fontSize: 14 },
+  retryText: { ...Typography.body, color: "#FFFFFF", fontWeight: "600" },
+  backBtn: { marginTop: Spacing.md, padding: Spacing.md },
+  backText: { ...Typography.caption, color: Colors.textTertiary },
 });
