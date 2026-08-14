@@ -10,10 +10,18 @@ import {
   View,
   type GestureResponderEvent,
 } from "react-native";
-import * as Speech from "expo-speech";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import type { Word } from "@/types/database";
+
+// 懒加载 expo-speech（仅在需要时加载）
+let Speech: typeof import("expo-speech") | null = null;
+const loadSpeech = async () => {
+  if (!Speech) {
+    Speech = await import("expo-speech");
+  }
+  return Speech;
+};
 
 interface Props {
   word: Word;
@@ -37,11 +45,12 @@ export function WordCard({ word, flipped, onFlip }: Props) {
   const frontOpacity = anim.interpolate({ inputRange: [0, 0.45, 0.55, 1], outputRange: [1, 1, 0, 0] });
   const backOpacity = anim.interpolate({ inputRange: [0, 0.45, 0.55, 1], outputRange: [0, 0, 1, 1] });
 
-  const speak = (e: GestureResponderEvent) => {
+  const speak = async (e: GestureResponderEvent) => {
     e.stopPropagation();
     try {
-      Speech.stop();
-      Speech.speak(word.spelling, { language: "en-US", rate: 0.9 });
+      const speechModule = await loadSpeech();
+      speechModule.stop();
+      speechModule.speak(word.spelling, { language: "en-US", rate: 0.9 });
     } catch {
       // 部分平台可能不支持 TTS
     }

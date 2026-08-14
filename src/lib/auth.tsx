@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { isSupabaseConfigured, supabase } from "./supabase";
+import { isSupabaseConfigured, getSupabase } from "./supabase";
 
 interface AuthContextValue {
   user: User | null;
@@ -24,30 +24,64 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// 认证超时时间（5秒）
+const AUTH_TIMEOUT_MS = 5000;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(isSupabaseConfigured);
 
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) {
+    if (!isSupabaseConfigured) {
       setLoading(false);
       return;
     }
+
     let mounted = true;
-    supabase.auth
+    const supabase = getSupabase();
+
+    // 创建超时 Promise
+    const timeoutPromise = new Promise<boolean>((resolve) => {
+      setTimeout(() => {
+        if (mounted) {
+          console.warn("Auth session check timed out, proceeding without session");
+          resolve(true);
+        }
+      }, AUTH_TIMEOUT_MS);
+    });
+
+    // 获取会话
+    const sessionPromise = supabase.auth
       .getSession()
       .then(({ data }) => {
         if (mounted) {
           setSession(data.session);
-          setLoading(false);
+          return false; // 未超时
         }
+        return false;
       })
       .catch(() => {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          return false;
+        }
+        return false;
       });
+
+    // 竞争：会话获取 vs 超时
+    Promise.race([sessionPromise, timeoutPromise]).then((timedOut) => {
+      if (mounted && timedOut) {
+        // 超时，继续加载 UI
+        setLoading(false);
+      } else if (mounted) {
+        // 正常完成
+        setLoading(false);
+      }
+    });
+
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       if (mounted) setSession(s);
     });
+
     return () => {
       mounted = false;
       sub.subscription.unsubscribe();
@@ -60,17 +94,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       mode: isSupabaseConfigured ? "supabase" : "local",
       signIn: async (email, password) => {
-        if (!supabase) return { error: "Supabase 未配置" };
+        if (!isSupabaseConfigured) return { error: "Supabase 未配置" };
+        const supabase = getSupabase();
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         return { error: error?.message ?? null };
       },
       signUp: async (email, password) => {
-        if (!supabase) return { error: "Supabase 未配置" };
+        if (!isSupabaseConfigured) return { error: "Supabase 未配置" };
+        const supabase = getSupabase();
         const { error } = await supabase.auth.signUp({ email, password });
         return { error: error?.message ?? null };
       },
       signOut: async () => {
-        await supabase?.auth.signOut();
+        if (isSupabaseConfigured) {
+          const supabase = getSupabase();
+          await supabase.auth.signOut();
+        }
       },
     }),
     [session, loading],

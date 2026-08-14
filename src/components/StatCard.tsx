@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius } from "../constants/theme";
@@ -11,7 +11,7 @@ interface StatCardProps {
   color: string;
 }
 
-export default function StatCard({
+function StatCard({
   iconName,
   iconColor,
   value,
@@ -57,3 +57,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+export default memo(StatCard);

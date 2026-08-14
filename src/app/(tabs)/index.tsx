@@ -1,6 +1,6 @@
 // 学习首页：词书选择 + 今日目标 + 开始学习/复习
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -68,7 +68,7 @@ export default function HomeScreen() {
     book && stats ? Math.min(100, (stats.totalLearned / book.wordCount) * 100) : 0;
   const newPct = stats ? Math.min(100, (stats.todayNew / GOAL_NEW) * 100) : 0;
   const reviewPct = stats ? Math.min(100, (stats.todayReview / GOAL_REVIEW) * 100) : 0;
-  const greeting = getGreeting();
+  const greeting = useMemo(() => getGreeting(), []);
 
   if (loading) {
     return (
