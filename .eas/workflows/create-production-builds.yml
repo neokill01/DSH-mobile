@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
   build_android:
@@ -12,11 +12,11 @@ jobs:
     type: build
     params:
       platform: android
-      profile: production
+      profile: production-android
 
   build_ios:
     name: Build iOS Production
     type: build
     params:
       platform: ios
-      profile: production
+      profile: production-ios
