@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "词记",
-    "slug": "wordnest",
+    "slug": "vocabapp",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "wordnest",
+    "scheme": "vocabapp",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
