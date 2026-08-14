@@ -7,9 +7,10 @@
 3. [Supabase 后端配置](#supabase-后端配置)
 4. [应用配置](#应用配置)
 5. [本地运行](#本地运行)
-6. [生产构建](#生产构建)
-7. [应用商店发布](#应用商店发布)
-8. [常见问题](#常见问题)
+6. [EAS 云构建](#eas-云构建)
+7. [EAS Workflows 自动构建](#eas-workflows-自动构建)
+8. [应用商店发布](#应用商店发布)
+9. [常见问题](#常见问题)
 
 ---
 
@@ -30,8 +31,8 @@
 - **Android SDK**：API 33+
 - **Java**：JDK 17
 
-### 云构建（可选）
-- **EAS CLI**：npm install -g eas-cli
+### 云构建
+- **EAS CLI**：`npm install -g eas-cli`（版本 >= 21.8.0）
 - **Expo 账号**：https://expo.dev
 
 ---
@@ -128,13 +129,13 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 {
   "expo": {
     "name": "词记",
-    "slug": "wordnest",
+    "slug": "vocabapp",
     "version": "0.1.0",
     "ios": {
-      "bundleIdentifier": "com.yourcompany.wordnest"
+      "bundleIdentifier": "com.neokill01.wordnest"
     },
     "android": {
-      "package": "com.yourcompany.wordnest"
+      "package": "com.neokill01.wordnest"
     }
   }
 }
@@ -180,88 +181,100 @@ yarn web
 
 ---
 
-## 生产构建
+## EAS 云构建
 
-### 方式一：EAS 云构建（推荐）
-
-#### 1. 安装 EAS CLI
-
-```bash
-npm install -g eas-cli
-```
-
-#### 2. 登录 Expo 账号
+### 1. 登录 Expo 账号
 
 ```bash
 eas login
 ```
 
-#### 3. 配置构建
+### 2. 构建命令
 
-首次构建会自动生成 `eas.json`，或手动创建：
-
-```json
-{
-  "cli": {
-    "version": ">= 7.0.0"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal"
-    },
-    "production": {
-      "autoIncrement": true
-    }
-  }
-}
-```
-
-#### 4. 执行构建
+#### 开发构建
 
 ```bash
-# iOS 生产构建
-eas build --platform ios --profile production
+# iOS 模拟器版本
+eas build --platform ios --profile development-simulator
 
-# Android 生产构建
-eas build --platform android --profile production
+# iOS 真机版本
+eas build --platform ios --profile development-device
 
-# 双平台构建
-eas build --platform all --profile production
+# Android APK
+eas build --platform android --profile development-android
 ```
 
-构建完成后，EAS 会提供下载链接。
-
-### 方式二：本地构建
-
-#### iOS 本地构建
+#### 预览构建
 
 ```bash
-# 生成原生项目
-npx expo prebuild --platform ios
+# iOS 预览版
+eas build --platform ios --profile preview-ios
 
-# 安装 CocoaPods 依赖
-cd ios && pod install && cd ..
-
-# 使用 Xcode 打开并构建
-open ios/wordnest.xcworkspace
+# Android 预览版
+eas build --platform android --profile preview-android
 ```
 
-#### Android 本地构建
+#### 生产构建
 
 ```bash
-# 生成原生项目
-npx expo prebuild --platform android
+# iOS 生产版
+eas build --platform ios --profile production-ios
 
-# 使用 Android Studio 打开
-open android
-
-# 或命令行构建
-cd android && ./gradlew assembleRelease
+# Android 生产版
+eas build --platform android --profile production-android
 ```
+
+### 3. 下载构建产物
+
+构建完成后，EAS 会提供下载链接：
+- **iOS**: `.tar.gz` 包含 `.app` 文件
+- **Android**: `.apk` 或 `.aab` 文件
+
+---
+
+## EAS Workflows 自动构建
+
+### 触发条件
+
+项目配置了自动构建 Workflows，当代码推送到特定分支时自动触发：
+
+| Workflow | 触发分支 | 触发条件 |
+|----------|----------|----------|
+| **Create Development Builds** | `develop`, `feature/**` | push 或 PR |
+| **Create Preview Builds** | `main` | push 或 PR |
+| **Create Production Builds** | `main` | push |
+
+### 路径过滤
+
+**仅 `src/` 目录的变更会触发构建**，以下文件变更不会触发：
+- 以 `.` 开头的文件/目录（`.eas/`, `.github/`, `.env` 等）
+- 配置文件（`app.json`, `eas.json`, `package.json`）
+- 文档文件（`README.md`, `AGENTS.md`）
+
+### 手动触发
+
+在 Expo 仪表板中可以手动触发任何 Workflow：
+1. 访问 https://expo.dev
+2. 选择项目
+3. 进入 **Workflows** 页面
+4. 选择 Workflow 并点击 **Run Workflow**
+
+### 查看构建状态
+
+```bash
+# 使用 CLI 查看构建列表
+eas build:list
+
+# 查看特定构建详情
+eas build:view <build-id>
+```
+
+### 构建产物下载
+
+构建完成后，可以通过以下方式下载：
+1. **Expo 仪表板**：构建详情页面提供下载链接
+2. **CLI**：`eas build:download <build-id>`
+3. **直接链接**：格式为 `https://expo.dev/artifacts/eas/<artifact-id>.tar.gz`
 
 ---
 
@@ -278,7 +291,7 @@ cd android && ./gradlew assembleRelease
 #### 2. 上传构建
 
 ```bash
-# 使用 EAS Submit
+# 使用 EAS Submit（推荐）
 eas submit --platform ios
 
 # 或手动上传
@@ -310,12 +323,67 @@ eas submit --platform android
 ```
 
 #### 3. 发布流程
-1. 登录 [Google Play Console](https://play.google.com/console
+1. 登录 [Google Play Console](https://play.google.com/console)
 2. 创建应用并填写信息
 3. 上传 AAB 文件
 4. 设置内容分级
 5. 选择发布国家/地区
 6. 提交审核（通常 1-3 天）
+
+---
+
+## 版本管理
+
+### 自动递增
+
+EAS Build 支持自动递增版本号：
+
+| 平台 | 字段 | 递增方式 |
+|------|------|----------|
+| iOS | `buildNumber` | 每次构建 +1 |
+| Android | `versionCode` | 每次构建 +1 |
+
+配置方式（`eas.json`）：
+
+```json
+{
+  "build": {
+    "production": {
+      "autoIncrement": true
+    },
+    "production-ios": {
+      "autoIncrement": true,
+      "ios": {
+        "autoIncrement": "buildNumber"
+      }
+    },
+    "production-android": {
+      "autoIncrement": true,
+      "android": {
+        "autoIncrement": "versionCode"
+      }
+    }
+  }
+}
+```
+
+### 手动更新版本
+
+修改 `app.json` 中的版本信息：
+
+```json
+{
+  "expo": {
+    "version": "0.2.0",
+    "ios": {
+      "buildNumber": "2"
+    },
+    "android": {
+      "versionCode": 2
+    }
+  }
+}
+```
 
 ---
 
@@ -332,52 +400,57 @@ A: 确保使用正确的 Expo SDK 版本：
 npx expo install --fix
 ```
 
-### Q: iOS 构建失败，提示 CocoaPods 错误？
+### Q: iOS 构建失败，提示 "expo-dev-client not installed"？
 
-A: 尝试清理并重新安装：
+A: 开发构建需要安装 expo-dev-client：
 ```bash
-cd ios
-pod deintegrate
-pod install
-cd ..
+yarn add expo-dev-client
 ```
 
-### Q: Android 构建失败，提示 JDK 版本错误？
+### Q: 构建失败，提示 "Invalid workflow definition"？
 
-A: 确保使用 JDK 17：
+A: 确保 `workflow_dispatch` 配置正确：
+```yaml
+on:
+  workflow_dispatch: {}  # 必须是空对象，不能是 null
+```
+
+### Q: 如何只构建特定平台？
+
+A: 使用 `--platform` 参数：
 ```bash
-# macOS (Homebrew)
-brew install openjdk@17
-export JAVA_HOME=/usr/local/opt/openjdk@17
+# 仅 iOS
+eas build --platform ios --profile production-ios
+
+# 仅 Android
+eas build --platform android --profile production-android
 ```
 
-### Q: 如何更新应用版本？
+### Q: 如何查看构建日志？
 
-A: 修改 `app.json` 中的 `version` 字段，并更新构建号：
-```json
-{
-  "expo": {
-    "version": "0.2.0",
-    "ios": {
-      "buildNumber": "2"
-    },
-    "android": {
-      "versionCode": 2
-    }
-  }
-}
-```
-
-### Q: 如何查看应用日志？
-
-A: 使用 Expo 开发工具：
+A: 使用 CLI 或 Expo 仪表板：
 ```bash
-# 启动并查看日志
-yarn start --dev-client
+# CLI 查看日志
+eas build:view <build-id>
 
-# 或使用 React Native Debugger
-# https://github.com/jhen0409/react-native-debugger
+# 或访问 Expo 仪表板的构建详情页面
 ```
+
+### Q: 如何取消正在运行的构建？
+
+A: 使用 CLI 或 Expo 仪表板：
+```bash
+# CLI 取消构建
+eas build:cancel <build-id>
+```
+
+### Q: 构建时间太长怎么办？
+
+A: 优化建议：
+1. 使用缓存（EAS 默认启用）
+2. 减少依赖数量
+3. 使用 `--non-interactive` 跳过交互提示
+4. 考虑使用本地构建进行快速测试
 
 ---
 
@@ -387,9 +460,10 @@ yarn start --dev-client
 1. Node.js 和 Yarn 版本是否符合要求
 2. 依赖是否完整安装（`yarn install`）
 3. 环境变量是否正确配置
-4. 原生项目是否需要清理（`npx expo prebuild --clean`）
+4. EAS CLI 版本是否 >= 21.8.0
+5. Expo 账号是否已登录（`eas whoami`）
 
 ---
 
-*文档版本：v1.0*
+*文档版本：v1.1*
 *最后更新：2026-08-14*
