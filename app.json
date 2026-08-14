@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
-    "version": "1.0.0",
+    "name": "词记",
+    "slug": "wordnest",
+    "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "wordnest",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
