@@ -14,9 +14,9 @@ jobs:
       platform: android
       profile: production-android
 
-  build_ios:
-    name: Build iOS Production
-    type: build
-    params:
-      platform: ios
-      profile: production-ios
+  # build_ios:
+  #   name: Build iOS Production
+  #   type: build
+  #   params:
+  #     platform: ios
+  #     profile: production-ios
