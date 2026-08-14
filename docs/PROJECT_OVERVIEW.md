@@ -7,7 +7,7 @@
 - **项目名称**：词记 WordNest
 - **版本**：v0.1.0
 - **技术栈**：Expo SDK 57 + React Native + TypeScript
-- **支持平台**：iOS / Android / Web
+- **支持平台**：iOS / Android
 
 ---
 
@@ -33,11 +33,16 @@
 - **学习进度**：总词汇量、已掌握、学习中
 - **连续打卡**：每日学习 streak 统计
 - **今日目标**：新词/复习进度可视化
+- **7天趋势图**：柱状图展示学习趋势
 
 ### 5. 用户系统
 - **本地演示模式**：无需注册，开箱即用
 - **云端同步**：Supabase 认证 + 数据持久化
 - **多设备同步**：登录后数据云端同步
+
+### 6. 成就系统
+- **7种成就**：第一天、连续打卡、词汇里程碑
+- **解锁动画**：成就解锁时的视觉反馈
 
 ---
 
@@ -50,11 +55,21 @@ src/
 │   ├── _layout.tsx       # 根布局（AuthProvider）
 │   ├── (auth)/           # 认证模块（登录/注册）
 │   ├── (tabs)/           # 主界面（首页/统计/个人）
+│   │   ├── index.tsx     # 首页
+│   │   ├── stats.tsx     # 统计页
+│   │   └── profile.tsx   # 个人中心
 │   └── review.tsx        # 复习核心页面
 ├── components/           # UI 组件
 │   ├── WordCard.tsx      # 翻转单词卡片
-│   └── RatingBar.tsx     # 四档评分栏
+│   ├── RatingBar.tsx     # 四档评分栏
+│   ├── StatCard.tsx      # 统计卡片
+│   ├── AchievementGrid.tsx # 成就网格
+│   ├── WeeklyChart.tsx   # 周趋势图表
+│   ├── ProgressCard.tsx  # 进度卡片
+│   └── Icon.tsx          # 图标组件
 ├── constants/            # 常量定义
+│   ├── theme.ts          # 设计系统（颜色/字体/间距）
+│   ├── icons.ts          # 图标映射
 │   ├── demoBooks.ts      # 演示词书数据
 │   ├── achievements.ts   # 成就系统
 │   └── ratings.ts        # 评分文案
@@ -67,6 +82,34 @@ src/
 │   └── statsUtil.ts      # 统计工具函数
 └── types/                # TypeScript 类型
     └── database.ts       # 数据库类型定义
+```
+
+### 设计系统（墨韵书卷风格）
+
+#### 色彩系统
+| 角色 | 名称 | 色值 | 用途 |
+|------|------|------|------|
+| 主色 | 墨韵蓝 | `#1E3A5F` | 主要按钮、标题、强调 |
+| 辅色 | 朱砂红 | `#C85A4A` | 成就、激励、重要标记 |
+| 点缀 | 琥珀金 | `#D4A853` | 进度、奖励、高亮 |
+| 成功 | 青玉绿 | `#2D8B6F` | 掌握、正确、完成 |
+| 背景 | 宣纸白 | `#F8F6F1` | 页面背景 |
+
+#### 字体系统
+| 角色 | 字号 | 字重 |
+|------|------|------|
+| 大标题 | 28px | 700 |
+| 标题 | 22px | 600 |
+| 副标题 | 18px | 500 |
+| 正文 | 16px | 400 |
+| 辅助 | 14px | 400 |
+| 标签 | 12px | 500 |
+
+#### 间距系统
+```
+xs: 4px    sm: 8px    md: 12px
+lg: 16px   xl: 20px   xxl: 24px
+xxxl: 32px section: 40px
 ```
 
 ### 双模式架构
@@ -85,6 +128,7 @@ src/
 - **@supabase/supabase-js**：后端服务
 - **AsyncStorage**：本地数据持久化
 - **expo-speech**：TTS 语音发音
+- **@expo/vector-icons**：Ionicons 图标库
 
 ---
 
@@ -107,16 +151,50 @@ src/
 ## UI/UX 设计
 
 ### 设计语言
-- **配色方案**：Material Design 3 风格，支持明暗主题
-- **间距系统**：统一的 4px 网格系统
-- **圆角规范**：sm(8px) / md(12px) / lg(16px) / xl(24px)
-- **阴影层级**：card / elevated / lifted 三级阴影
+- **风格**：墨韵书卷风格，融合东方书法美学与现代极简设计
+- **配色**：墨韵蓝 + 朱砂红 + 琥珀金
+- **图标**：统一使用 Ionicons 图标库
 
 ### 交互设计
-- **翻转卡片**：点击查看释义，支持手势操作
-- **进度可视化**：进度条、环形图、打卡日历
+- **翻转卡片**：3D Y轴旋转动画，duration: 600ms
+- **进度可视化**：进度条、柱状图、统计卡片
 - **即时反馈**：评分后立即显示下一卡片
-- **流畅动画**：React Native Reanimated 驱动
+- **按钮交互**：按压缩放动画 (scale: 0.95)
+
+### 组件库
+| 组件 | 功能 | 文件 |
+|------|------|------|
+| WordCard | 翻转单词卡片 | `src/components/WordCard.tsx` |
+| RatingBar | 四档评分栏 | `src/components/RatingBar.tsx` |
+| StatCard | 统计卡片 | `src/components/StatCard.tsx` |
+| AchievementGrid | 成就网格 | `src/components/AchievementGrid.tsx` |
+| WeeklyChart | 周趋势图表 | `src/components/WeeklyChart.tsx` |
+| ProgressCard | 进度卡片 | `src/components/ProgressCard.tsx` |
+| Icon | 图标组件 | `src/components/Icon.tsx` |
+
+---
+
+## 构建配置
+
+### EAS Build Profiles
+| Profile | 用途 | 自动递增 |
+|---------|------|----------|
+| development | 开发构建 | ✅ |
+| development-simulator | iOS 模拟器 | ✅ buildNumber |
+| development-device | iOS 真机 | ✅ buildNumber |
+| development-android | Android APK | ✅ versionCode |
+| preview | 预览构建 | ✅ |
+| preview-ios | iOS 预览 | ✅ buildNumber |
+| preview-android | Android 预览 | ✅ versionCode |
+| production | 生产构建 | ✅ |
+| production-ios | iOS 生产 | ✅ buildNumber |
+| production-android | Android 生产 | ✅ versionCode |
+
+### 触发条件
+- **Development**: push 到 `develop` 或 `feature/**` 分支
+- **Preview/Production**: push 到 `main` 分支
+- **路径过滤**: 仅 `src/` 目录变更触发构建
+- **忽略**: 以 `.` 开头的文件/目录
 
 ---
 
@@ -135,6 +213,7 @@ src/
 - ✅ 间隔重复复习系统
 - ✅ 统计与进度追踪
 - ✅ 个人中心
+- ✅ 成就系统
 
 ### 技术特性
 - ✅ TypeScript 类型安全
@@ -142,6 +221,8 @@ src/
 - ✅ 双模式架构（本地/云端）
 - ✅ 离线优先设计
 - ✅ 响应式 UI
+- ✅ 设计系统（墨韵书卷风格）
+- ✅ Ionicons 图标库
 
 ---
 
@@ -170,5 +251,5 @@ src/
 
 ---
 
-*文档版本：v1.0*
+*文档版本：v1.1*
 *最后更新：2026-08-14*
