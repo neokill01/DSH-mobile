@@ -1,7 +1,11 @@
+// 成就网格组件 - 青春活力风格
+// 稀有度边框、解锁动画、更丰富的视觉表现
+
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Typography, Spacing, Radius, Shadow } from "../constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
+import { RARITY_COLORS, type AchievementRarity } from "@/constants/achievements";
 
 interface Achievement {
   id: string;
@@ -9,6 +13,7 @@ interface Achievement {
   title: string;
   description: string;
   unlocked: boolean;
+  rarity?: AchievementRarity;
 }
 
 interface AchievementGridProps {
@@ -18,43 +23,65 @@ interface AchievementGridProps {
 export default function AchievementGrid({ achievements }: AchievementGridProps) {
   return (
     <View style={styles.container}>
-      <View style={styles.sectionTitleRow}>
-        <Ionicons name="trophy" size={18} color={Colors.gold} />
-        <Text style={styles.sectionTitle}>成就</Text>
-      </View>
       <View style={styles.grid}>
-        {achievements.map((achievement) => (
-          <View
-            key={achievement.id}
-            style={[
-              styles.item,
-              !achievement.unlocked && styles.itemLocked,
-            ]}
-          >
+        {achievements.map((achievement) => {
+          const rarity = achievement.rarity || "common";
+          const rarityColor = RARITY_COLORS[rarity];
+
+          return (
             <View
+              key={achievement.id}
               style={[
-                styles.iconWrap,
-                achievement.unlocked && styles.iconWrapUnlocked,
-                !achievement.unlocked && styles.iconWrapLocked,
+                styles.item,
+                !achievement.unlocked && styles.itemLocked,
+                achievement.unlocked && {
+                  borderWidth: 2,
+                  borderColor: rarityColor.border + "40",
+                },
               ]}
             >
-              <Ionicons
-                name={achievement.iconName}
-                size={24}
-                color={achievement.unlocked ? Colors.gold : Colors.textMuted}
-              />
+              <View
+                style={[
+                  styles.iconWrap,
+                  achievement.unlocked && {
+                    backgroundColor: rarityColor.bg,
+                  },
+                  !achievement.unlocked && styles.iconWrapLocked,
+                ]}
+              >
+                {achievement.unlocked ? (
+                  <Ionicons
+                    name={achievement.iconName}
+                    size={26}
+                    color={rarityColor.border}
+                  />
+                ) : (
+                  <Ionicons
+                    name="lock-closed"
+                    size={20}
+                    color={Colors.textMuted}
+                  />
+                )}
+              </View>
+              <Text
+                style={[
+                  styles.title,
+                  !achievement.unlocked && styles.titleLocked,
+                ]}
+                numberOfLines={1}
+              >
+                {achievement.title}
+              </Text>
+              {achievement.unlocked && (
+                <View style={[styles.rarityBadge, { backgroundColor: rarityColor.bg }]}>
+                  <Text style={[styles.rarityText, { color: rarityColor.border }]}>
+                    {rarityColor.label}
+                  </Text>
+                </View>
+              )}
             </View>
-            <Text
-              style={[
-                styles.title,
-                !achievement.unlocked && styles.titleLocked,
-              ]}
-              numberOfLines={1}
-            >
-              {achievement.title}
-            </Text>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </View>
   );
@@ -62,53 +89,59 @@ export default function AchievementGrid({ achievements }: AchievementGridProps) 
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: Spacing.xl,
-  },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
-  },
-  sectionTitle: {
-    ...Typography.h3,
+    marginTop: Spacing.sm,
   },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: Spacing.md,
+    justifyContent: "space-between",
   },
   item: {
-    width: "30%",
+    width: "48%",
     alignItems: "center",
-    padding: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
     backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
-    ...Shadow.soft,
+    borderRadius: Radius.xl,
+    borderWidth: 3,
+    borderColor: Colors.border,
+    marginBottom: Spacing.md,
+    ...Shadow.card,
   },
   itemLocked: {
-    backgroundColor: Colors.borderLight,
+    backgroundColor: Colors.surfaceAlt,
     shadowOpacity: 0,
+    opacity: 0.7,
   },
   iconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: Spacing.sm,
-  },
-  iconWrapUnlocked: {
-    backgroundColor: Colors.goldBg,
+    marginBottom: Spacing.md,
   },
   iconWrapLocked: {
-    backgroundColor: Colors.borderLight,
+    backgroundColor: Colors.divider,
   },
   title: {
-    ...Typography.label,
+    ...Typography.body,
+    fontWeight: "600",
     textAlign: "center",
+    color: Colors.text,
+    marginBottom: Spacing.xs,
   },
   titleLocked: {
     color: Colors.textMuted,
+  },
+  rarityBadge: {
+    marginTop: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
+    borderRadius: Radius.sm,
+  },
+  rarityText: {
+    fontSize: 10,
+    fontWeight: "700",
   },
 });
