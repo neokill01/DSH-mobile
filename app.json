@@ -37,6 +37,12 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-updates",
+        {
+          "url": "https://u.expo.dev/043fb6f4-5b62-4271-9026-e0c45c92d452"
+        }
       ]
     ],
     "experiments": {

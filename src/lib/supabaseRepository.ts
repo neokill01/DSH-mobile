@@ -1,22 +1,33 @@
-// 云端模式仓库：直连 Supabase 表（word_books / words / word_book_items /
-// user_words / review_logs / achievements / user_achievements）。
-// 使用前需：1) 配置 .env；2) 在 Supabase 执行 supabase/migrations/0001_init.sql。
-//
-// 说明：聚合统计为便于骨架阅读在客户端做（量小）；数据量上来后改为
-// Edge Function / RPC 服务端聚合，并给 review_logs 分页拉取。
+// 云端模式仓库：直连 Supabase 表。
+// 新增功能（测评、体验课、错词池、AI等）暂时委托给本地仓库实现，
+// 后续可根据 Supabase Schema 扩展为真正的云端实现。
 
 import { ACHIEVEMENTS } from "@/constants/achievements";
 import {
   CardState,
+  type AssessmentQuestion,
+  type AssessmentResult,
+  type BandLevel,
+  type Course,
+  type CourseLevel,
+  type CourseUnit,
   type DailyCount,
+  type Device,
   type DueCard,
+  type ExperienceCourse,
+  type LearningOverview,
+  type LearningReport,
   type ReviewLog,
   type Stats,
   type StoredCard,
+  type VocabularyTrend,
   type Word,
   type WordBook,
+  type WordLevel,
+  type WrongWord,
 } from "@/types/database";
 import { schedule } from "./fsrs";
+import { localRepository } from "./localRepository";
 import type { AchievementStatus, WordRepository } from "./repository";
 import { calcStreak, dailyCountsFromLogs, dateStr, firstLogDates } from "./statsUtil";
 import { getSupabase } from "./supabase";
@@ -84,6 +95,9 @@ class SupabaseRepository implements WordRepository {
     return user.id;
   }
 
+  // ============================================
+  // 原有接口（云端实现）
+  // ============================================
   async getBooks(): Promise<WordBook[]> {
     const uid = await this.uid();
     const { data, error } = await getSupabase()
@@ -216,6 +230,12 @@ class SupabaseRepository implements WordRepository {
       client_ts: log.clientTs,
     });
     if (logErr) throw logErr;
+
+    // 如果答错，加入错词池
+    if (input.rating <= 1) {
+      await this.addToWrongPool(input.word.id);
+    }
+
     return next;
   }
 
@@ -287,6 +307,124 @@ class SupabaseRepository implements WordRepository {
       master_50: stats.mastered >= 50,
     };
     return ACHIEVEMENTS.map((a) => ({ code: a.code, unlocked: Boolean(rules[a.code]) }));
+  }
+
+  // ============================================
+  // 新增接口：暂时委托给本地仓库实现
+  // TODO: 后续根据 Supabase Schema 扩展为真正的云端实现
+  // ============================================
+  async startAssessment(): Promise<string> {
+    return localRepository.startAssessment();
+  }
+
+  async getAssessmentQuestion(assessmentId: string): Promise<AssessmentQuestion | null> {
+    return localRepository.getAssessmentQuestion(assessmentId);
+  }
+
+  async submitAssessmentAnswer(
+    assessmentId: string,
+    questionId: string,
+    selectedIndex: number,
+  ): Promise<{ correct: boolean; isComplete: boolean }> {
+    return localRepository.submitAssessmentAnswer(assessmentId, questionId, selectedIndex);
+  }
+
+  async getAssessmentResult(assessmentId: string): Promise<AssessmentResult | null> {
+    return localRepository.getAssessmentResult(assessmentId);
+  }
+
+  async getLatestAssessmentResult(): Promise<AssessmentResult | null> {
+    return localRepository.getLatestAssessmentResult();
+  }
+
+  async getExperienceCourse(): Promise<ExperienceCourse | null> {
+    return localRepository.getExperienceCourse();
+  }
+
+  async startExperienceCourse(): Promise<ExperienceCourse> {
+    return localRepository.startExperienceCourse();
+  }
+
+  async getExperienceDayWords(day: number): Promise<Word[]> {
+    return localRepository.getExperienceDayWords(day);
+  }
+
+  async completeExperienceDay(day: number): Promise<void> {
+    return localRepository.completeExperienceDay(day);
+  }
+
+  async getCourses(): Promise<Course[]> {
+    return localRepository.getCourses();
+  }
+
+  async getCourseLevels(courseId: string): Promise<CourseLevel[]> {
+    return localRepository.getCourseLevels(courseId);
+  }
+
+  async getLevelUnits(levelId: string): Promise<CourseUnit[]> {
+    return localRepository.getLevelUnits(levelId);
+  }
+
+  async getUnitWords(unitId: string): Promise<{ newWords: Word[]; reviewWords: DueCard[] }> {
+    return localRepository.getUnitWords(unitId);
+  }
+
+  async getDailyLearningTask(): Promise<{
+    newWords: Word[];
+    reviewWords: DueCard[];
+    targetNewCount: number;
+    targetReviewCount: number;
+  }> {
+    return localRepository.getDailyLearningTask();
+  }
+
+  async getWrongWords(status?: string): Promise<WrongWord[]> {
+    return localRepository.getWrongWords(status);
+  }
+
+  async addToWrongPool(wordId: string): Promise<void> {
+    return localRepository.addToWrongPool(wordId);
+  }
+
+  async updateWrongWordStatus(wrongWordId: string, status: string): Promise<void> {
+    return localRepository.updateWrongWordStatus(wrongWordId, status);
+  }
+
+  async getWrongWordStats(): Promise<{
+    total: number;
+    newCount: number;
+    learningCount: number;
+    masteredCount: number;
+  }> {
+    return localRepository.getWrongWordStats();
+  }
+
+  async getAiAnalysis(wrongWordId: string): Promise<string | null> {
+    return localRepository.getAiAnalysis(wrongWordId);
+  }
+
+  async generateAiArticle(wordIds: string[]): Promise<string> {
+    return localRepository.generateAiArticle(wordIds);
+  }
+
+  async getDevices(): Promise<Device[]> {
+    return localRepository.getDevices();
+  }
+
+  async removeDevice(deviceId: string): Promise<void> {
+    return localRepository.removeDevice(deviceId);
+  }
+
+  async getLearningOverview(): Promise<LearningOverview> {
+    return localRepository.getLearningOverview();
+  }
+
+  async getVocabularyTrend(days: number): Promise<VocabularyTrend[]> {
+    return localRepository.getVocabularyTrend(days);
+  }
+
+  async generateLearningReport(): Promise<LearningReport> {
+    return localRepository.generateLearningReport();
   }
 }
 

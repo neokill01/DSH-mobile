@@ -1,8 +1,8 @@
-// 我的：运行模式 / 每日目标 / 成就 / 登出
+// 我的：用户信息 / 快捷入口 / 成就 / 登出
 
 import { useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { ACHIEVEMENTS } from "@/constants/achievements";
@@ -29,7 +29,6 @@ export default function ProfileScreen() {
   const unlocked = (code: string) =>
     achievements.find((a) => a.code === code)?.unlocked ?? false;
 
-  // 转换成就数据格式
   const achievementData = ACHIEVEMENTS.map((a) => ({
     id: a.code,
     iconName: a.iconName,
@@ -78,33 +77,54 @@ export default function ProfileScreen() {
         ) : null}
       </View>
 
-      {/* 每日目标 */}
+      {/* 功能菜单 */}
       <View style={styles.card}>
-        <View style={styles.sectionTitleRow}>
-          <Ionicons name="flag" size={18} color={Colors.primary} />
-          <Text style={styles.sectionTitle}>每日目标</Text>
-        </View>
-        <View style={styles.goalItem}>
-          <View style={styles.goalLeft}>
-            <View style={[styles.goalDot, { backgroundColor: Colors.gold }]} />
-            <Text style={styles.goalLabel}>新词目标</Text>
+        <Text style={styles.menuSectionTitle}>学习工具</Text>
+        <Pressable style={styles.menuItem} onPress={() => router.push("/assessment/start")}>
+          <View style={[styles.menuIcon, { backgroundColor: Colors.primaryBg }]}>
+            <Ionicons name="school" size={20} color={Colors.primary} />
           </View>
-          <Text style={styles.goalValue}>20 个/天</Text>
-        </View>
-        <View style={styles.goalItem}>
-          <View style={styles.goalLeft}>
-            <View style={[styles.goalDot, { backgroundColor: Colors.success }]} />
-            <Text style={styles.goalLabel}>复习目标</Text>
+          <Text style={styles.menuLabel}>词汇量测评</Text>
+          <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+        </Pressable>
+        <Pressable style={styles.menuItem} onPress={() => router.push("/word/wrong-list")}>
+          <View style={[styles.menuIcon, { backgroundColor: Colors.dangerBg }]}>
+            <Ionicons name="alert-circle" size={20} color={Colors.danger} />
           </View>
-          <Text style={styles.goalValue}>100 个/天</Text>
-        </View>
-        <Text style={styles.hint}>目标可在后续版本中自定义</Text>
+          <Text style={styles.menuLabel}>错词本</Text>
+          <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+        </Pressable>
+        <Pressable style={styles.menuItem} onPress={() => router.push("/ai/analysis")}>
+          <View style={[styles.menuIcon, { backgroundColor: Colors.goldBg }]}>
+            <Ionicons name="sparkles" size={20} color={Colors.gold} />
+          </View>
+          <Text style={styles.menuLabel}>AI 智能解析</Text>
+          <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+        </Pressable>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.menuSectionTitle}>设置</Text>
+        <Pressable style={styles.menuItem} onPress={() => router.push("/settings/device")}>
+          <View style={[styles.menuIcon, { backgroundColor: Colors.successBg }]}>
+            <Ionicons name="phone-portrait" size={20} color={Colors.success} />
+          </View>
+          <Text style={styles.menuLabel}>设备管理</Text>
+          <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+        </Pressable>
+        <Pressable style={styles.menuItem} onPress={() => router.push("/settings/export")}>
+          <View style={[styles.menuIcon, { backgroundColor: Colors.primaryBg }]}>
+            <Ionicons name="document-text" size={20} color={Colors.primary} />
+          </View>
+          <Text style={styles.menuLabel}>学习报告导出</Text>
+          <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+        </Pressable>
       </View>
 
       {/* 成就 */}
       <AchievementGrid achievements={achievementData} />
 
-      <Text style={styles.footer}>词记 WordNest · v0.1.0</Text>
+      <Text style={styles.footer}>词记 WordNest · v1.0.0</Text>
     </ScrollView>
   );
 }
@@ -112,110 +132,37 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: Spacing.xl },
-  title: {
-    ...Typography.h1,
-    color: Colors.primary,
-    marginBottom: Spacing.xl,
-  },
-
-  // Card
+  title: { ...Typography.h1, color: Colors.primary, marginBottom: Spacing.xl },
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-    ...Shadow.card,
+    backgroundColor: Colors.surface, borderRadius: Radius.lg,
+    padding: Spacing.lg, marginBottom: Spacing.lg, ...Shadow.card,
   },
-  profileCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.lg,
-  },
+  profileCard: { flexDirection: "row", alignItems: "center", gap: Spacing.lg },
   avatarWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: Colors.primaryBg,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.primaryBg,
+    alignItems: "center", justifyContent: "center",
   },
-  userInfo: {
-    flex: 1,
-  },
+  userInfo: { flex: 1 },
   modeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.xs,
-    alignSelf: "flex-start",
-    backgroundColor: Colors.primaryBg,
-    borderRadius: Radius.pill,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
+    flexDirection: "row", alignItems: "center", gap: Spacing.xs,
+    alignSelf: "flex-start", backgroundColor: Colors.primaryBg,
+    borderRadius: Radius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs,
     marginBottom: Spacing.sm,
   },
-  modeBadgeText: {
-    ...Typography.label,
-    color: Colors.primary,
-    fontWeight: "600",
-  },
-  accountText: {
-    ...Typography.caption,
-  },
+  modeBadgeText: { ...Typography.label, color: Colors.primary, fontWeight: "600" },
+  accountText: { ...Typography.caption },
   logoutBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.dangerBg,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.dangerBg,
+    alignItems: "center", justifyContent: "center",
   },
-
-  // Goals
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
+  menuSectionTitle: { ...Typography.h3, marginBottom: Spacing.md },
+  menuItem: {
+    flexDirection: "row", alignItems: "center", paddingVertical: Spacing.md,
+    borderBottomWidth: 1, borderBottomColor: Colors.borderLight, gap: Spacing.md,
   },
-  sectionTitle: {
-    ...Typography.h3,
+  menuIcon: {
+    width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center",
   },
-  goalItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  goalLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.md,
-  },
-  goalDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  goalLabel: {
-    ...Typography.body,
-    color: Colors.textSecondary,
-  },
-  goalValue: {
-    ...Typography.body,
-    fontWeight: "600",
-  },
-  hint: {
-    ...Typography.label,
-    color: Colors.textMuted,
-    marginTop: Spacing.md,
-  },
-
-  footer: {
-    ...Typography.label,
-    color: Colors.textHint,
-    textAlign: "center",
-    marginTop: Spacing.lg,
-  },
+  menuLabel: { flex: 1, ...Typography.body, fontWeight: "500" },
+  footer: { ...Typography.label, color: Colors.textHint, textAlign: "center", marginTop: Spacing.lg },
 });

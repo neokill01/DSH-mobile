@@ -1,4 +1,4 @@
-// 学习首页：词书选择 + 今日目标 + 开始学习/复习
+// 学习首页：词汇量测评入口 + 体验课/正式课程 + 今日目标 + 错词管理
 
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -15,12 +15,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { getRepository } from "@/lib/repository";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
-import type { Stats, WordBook } from "@/types/database";
+import type { Stats, WordBook, ExperienceCourse } from "@/types/database";
 
 const GOAL_NEW = 20;
 const GOAL_REVIEW = 100;
 
-// 获取问候语（使用 Ionicons）
 const getGreeting = () => {
   const hour = new Date().getHours();
   if (hour < 12) return { text: "早上好", icon: "sunny" as const, color: Colors.gold };
@@ -31,17 +30,23 @@ const getGreeting = () => {
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [book, setBook] = useState<WordBook | null>(null);
-  const [books, setBooks] = useState<WordBook[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [experience, setExperience] = useState<ExperienceCourse | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [books, setBooks] = useState<WordBook[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     const repo = getRepository();
     try {
-      const [b, s] = await Promise.all([repo.getCurrentBook(), repo.getStats()]);
+      const [b, s, exp] = await Promise.all([
+        repo.getCurrentBook(),
+        repo.getStats(),
+        repo.getExperienceCourse(),
+      ]);
       setBook(b);
       setStats(s);
+      setExperience(exp);
     } finally {
       setLoading(false);
     }
@@ -103,19 +108,56 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* 当前词书卡片 */}
-        <View style={[styles.card, styles.bookCard]}>
-          <View style={styles.cardHeader}>
-            <View style={styles.bookIconWrap}>
+        {/* 词汇量测评入口 */}
+        <Pressable style={styles.assessmentCard} onPress={() => router.push("/assessment/start")}>
+          <View style={styles.assessmentLeft}>
+            <View style={styles.assessmentIconWrap}>
+              <Ionicons name="school" size={24} color="#FFFFFF" />
+            </View>
+            <View>
+              <Text style={styles.assessmentTitle}>词汇量测评</Text>
+              <Text style={styles.assessmentDesc}>了解你的真实英语水平</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" />
+        </Pressable>
+
+        {/* 体验课入口（如果未完成体验课） */}
+        {(!experience || experience.status === "in_progress") && (
+          <Pressable style={styles.experienceCard} onPress={() => router.push("/experience/course")}>
+            <View style={styles.expLeft}>
+              <Ionicons name="rocket" size={24} color={Colors.gold} />
+              <View style={styles.expInfo}>
+                <Text style={styles.expTitle}>3天免费体验课</Text>
+                <Text style={styles.expDesc}>约100个核心词汇，快速入门</Text>
+              </View>
+            </View>
+            <View style={styles.expBadge}>
+              <Text style={styles.expBadgeText}>免费</Text>
+            </View>
+          </Pressable>
+        )}
+
+        {/* 正式课程入口 */}
+        <Pressable style={styles.courseCard} onPress={() => router.push("/course/level?courseId=course-cet4")}>
+          <View style={styles.courseLeft}>
+            <View style={styles.courseIconWrap}>
               <Ionicons name="book" size={22} color={Colors.primary} />
             </View>
-            <View style={styles.bookInfo}>
-              <Text style={styles.bookTitle}>{book?.title}</Text>
-              <Text style={styles.bookDesc}>{book?.description}</Text>
+            <View style={styles.courseInfo}>
+              <Text style={styles.courseTitle}>{book?.title ?? "选择课程"}</Text>
+              <Text style={styles.courseDesc}>系统化学习，科学复习</Text>
             </View>
-            <Pressable style={styles.switchBtn} onPress={() => setPickerOpen(true)}>
-              <Text style={styles.switchBtnText}>切换</Text>
-            </Pressable>
+          </View>
+          <Pressable style={styles.switchBtn} onPress={() => setPickerOpen(true)}>
+            <Text style={styles.switchBtnText}>切换</Text>
+          </Pressable>
+        </Pressable>
+
+        {/* 当前词书进度 */}
+        <View style={styles.progressCard}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressTitle}>学习进度</Text>
           </View>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
@@ -160,25 +202,53 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* 行动按钮 */}
+        {/* 快捷入口 */}
+        <View style={styles.quickGrid}>
+          <Pressable style={styles.quickItem} onPress={() => router.push("/word/wrong-list")}>
+            <View style={[styles.quickIcon, { backgroundColor: Colors.dangerBg }]}>
+              <Ionicons name="alert-circle" size={20} color={Colors.danger} />
+            </View>
+            <Text style={styles.quickLabel}>错词本</Text>
+          </Pressable>
+          <Pressable style={styles.quickItem} onPress={() => router.push("/ai/analysis")}>
+            <View style={[styles.quickIcon, { backgroundColor: Colors.primaryBg }]}>
+              <Ionicons name="sparkles" size={20} color={Colors.primary} />
+            </View>
+            <Text style={styles.quickLabel}>AI解析</Text>
+          </Pressable>
+          <Pressable style={styles.quickItem} onPress={() => router.push("/settings/device")}>
+            <View style={[styles.quickIcon, { backgroundColor: Colors.goldBg }]}>
+              <Ionicons name="phone-portrait" size={20} color={Colors.gold} />
+            </View>
+            <Text style={styles.quickLabel}>设备管理</Text>
+          </Pressable>
+          <Pressable style={styles.quickItem} onPress={() => router.push("/settings/export")}>
+            <View style={[styles.quickIcon, { backgroundColor: Colors.successBg }]}>
+              <Ionicons name="document-text" size={20} color={Colors.success} />
+            </View>
+            <Text style={styles.quickLabel}>学习报告</Text>
+          </Pressable>
+        </View>
+
+        {/* 学习/复习按钮 */}
         <View style={styles.actions}>
           <Pressable
             style={[styles.actionBtn, styles.actionPrimary]}
-            onPress={() => router.push({ pathname: "/review", params: { mode: "new" } })}
+            onPress={() => router.push("/review?mode=new")}
           >
-            <Ionicons name="sparkles" size={20} color="#FFF" />
-            <Text style={styles.actionPrimaryText}>学新词</Text>
-            <Text style={styles.actionPrimarySub}>还剩 {stats?.newCount ?? 0} 个</Text>
+            <Ionicons name="play" size={22} color="#FFFFFF" />
+            <Text style={styles.actionPrimaryText}>学习新词</Text>
+            <Text style={styles.actionPrimarySub}>今日还需 {Math.max(0, GOAL_NEW - (stats?.todayNew ?? 0))} 词</Text>
           </Pressable>
           <Pressable
-            style={[styles.actionBtn, styles.actionSecondary]}
-            onPress={() => router.push({ pathname: "/review", params: { mode: "review" } })}
+            style={[styles.actionBtn, stats?.dueCount ?? 0 > 0 ? styles.actionSecondary : styles.actionSecondaryDisabled]}
+            onPress={() => router.push("/review?mode=review")}
           >
-            <Ionicons name="refresh" size={20} color={Colors.accent} />
-            <Text style={styles.actionSecondaryText}>开始复习</Text>
-            <Text style={styles.actionSecondarySub}>
-              待复习 {stats?.dueCount ?? 0}
+            <Ionicons name="refresh" size={22} color={stats?.dueCount ?? 0 > 0 ? Colors.accent : Colors.textMuted} />
+            <Text style={[styles.actionSecondaryText, stats?.dueCount ?? 0 > 0 ? {} : { color: Colors.textMuted }]}>
+              复习
             </Text>
+            <Text style={styles.actionSecondarySub}>{stats?.dueCount ?? 0} 词待复习</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -186,31 +256,26 @@ export default function HomeScreen() {
       {/* 词书选择弹窗 */}
       <Modal visible={pickerOpen} transparent animationType="slide">
         <Pressable style={styles.modalMask} onPress={() => setPickerOpen(false)}>
-          <Pressable style={styles.modalSheet} onPress={() => {}}>
+          <View style={styles.modalSheet} onStartShouldSetResponder={() => true}>
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>选择词书</Text>
             {books.map((b) => (
               <Pressable
                 key={b.id}
-                style={[styles.bookItem, b.id === book?.id && styles.bookItemActive]}
+                style={[styles.bookItem, book?.id === b.id && styles.bookItemActive]}
                 onPress={() => switchBook(b)}
               >
                 <View style={styles.bookItemLeft}>
-                  <Ionicons
-                    name={b.id === book?.id ? "checkmark-circle" : "ellipse-outline"}
-                    size={20}
-                    color={b.id === book?.id ? Colors.primary : Colors.textHint}
-                  />
+                  <Ionicons name="book" size={20} color={book?.id === b.id ? Colors.primary : Colors.textMuted} />
                 </View>
                 <View style={styles.bookItemContent}>
                   <Text style={styles.bookItemTitle}>{b.title}</Text>
-                  <Text style={styles.bookItemMeta}>
-                    {b.level} · {b.wordCount} 词
-                  </Text>
+                  <Text style={styles.bookItemMeta}>{b.wordCount} 词 · {b.level}</Text>
                 </View>
+                {book?.id === b.id && <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />}
               </Pressable>
             ))}
-          </Pressable>
+          </View>
         </Pressable>
       </Modal>
     </View>
@@ -220,266 +285,127 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   container: { flex: 1 },
-  content: { padding: Spacing.xl },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.background,
-  },
+  content: { paddingHorizontal: Spacing.xl },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: Colors.background },
 
   // Header
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: Spacing.xl,
-  },
-  greetingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
-    marginBottom: Spacing.xs,
-  },
-  greeting: {
-    ...Typography.caption,
-  },
-  appName: {
-    ...Typography.h1,
-    color: Colors.primary,
-  },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: Spacing.xl },
+  greetingRow: { flexDirection: "row", alignItems: "center", gap: Spacing.sm, marginBottom: Spacing.xs },
+  greeting: { ...Typography.caption },
+  appName: { ...Typography.h1, color: Colors.primary },
   streakBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.xs,
-    backgroundColor: Colors.goldBg,
-    borderRadius: Radius.pill,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    flexDirection: "row", alignItems: "center", gap: Spacing.xs,
+    backgroundColor: Colors.goldBg, borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
-  streakText: {
-    ...Typography.label,
-    color: Colors.gold,
-    fontWeight: "700",
-  },
+  streakText: { ...Typography.label, color: Colors.gold, fontWeight: "700" },
 
-  // Cards
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-    ...Shadow.card,
+  // Assessment card
+  assessmentCard: {
+    backgroundColor: Colors.primary, borderRadius: Radius.xl, padding: Spacing.lg,
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    marginBottom: Spacing.md, ...Shadow.lifted,
   },
-  bookCard: {
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
+  assessmentLeft: { flexDirection: "row", alignItems: "center", gap: Spacing.md, flex: 1 },
+  assessmentIconWrap: {
+    width: 48, height: 48, borderRadius: 24, backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center", justifyContent: "center",
   },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: Spacing.lg,
+  assessmentTitle: { ...Typography.body, color: "#FFFFFF", fontWeight: "700" },
+  assessmentDesc: { ...Typography.label, color: "rgba(255,255,255,0.8)", marginTop: Spacing.xs },
+
+  // Experience card
+  experienceCard: {
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg,
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    marginBottom: Spacing.md, borderWidth: 1.5, borderColor: Colors.gold, ...Shadow.soft,
   },
-  bookIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.primaryBg,
-    alignItems: "center",
-    justifyContent: "center",
+  expLeft: { flexDirection: "row", alignItems: "center", gap: Spacing.md, flex: 1 },
+  expInfo: { flex: 1 },
+  expTitle: { ...Typography.body, fontWeight: "600", color: Colors.goldDark },
+  expDesc: { ...Typography.caption, color: Colors.textMuted, marginTop: Spacing.xs },
+  expBadge: { backgroundColor: Colors.gold, borderRadius: Radius.sm, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs },
+  expBadgeText: { ...Typography.label, color: "#FFFFFF", fontWeight: "700", fontSize: 10 },
+
+  // Course card
+  courseCard: {
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg,
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    marginBottom: Spacing.lg, ...Shadow.soft,
   },
-  bookInfo: {
-    flex: 1,
-    marginLeft: Spacing.md,
+  courseLeft: { flexDirection: "row", alignItems: "center", gap: Spacing.md, flex: 1 },
+  courseIconWrap: {
+    width: 44, height: 44, borderRadius: Radius.md, backgroundColor: Colors.primaryBg,
+    alignItems: "center", justifyContent: "center",
   },
-  bookTitle: {
-    ...Typography.body,
-    fontWeight: "700",
-  },
-  bookDesc: {
-    ...Typography.label,
-    color: Colors.textMuted,
-    marginTop: Spacing.xs,
-  },
-  switchBtn: {
-    backgroundColor: Colors.primaryBg,
-    borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-  },
-  switchBtnText: {
-    ...Typography.label,
-    color: Colors.primary,
-    fontWeight: "600",
-  },
+  courseInfo: { flex: 1 },
+  courseTitle: { ...Typography.body, fontWeight: "700" },
+  courseDesc: { ...Typography.caption, color: Colors.textMuted, marginTop: Spacing.xs },
+  switchBtn: { backgroundColor: Colors.primaryBg, borderRadius: Radius.sm, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
+  switchBtnText: { ...Typography.label, color: Colors.primary, fontWeight: "600" },
 
   // Progress
-  progressTrack: {
-    height: 8,
-    borderRadius: Radius.pill,
-    backgroundColor: Colors.divider,
-    overflow: "hidden",
+  progressCard: {
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg,
+    marginBottom: Spacing.lg, ...Shadow.soft,
   },
-  progressFill: {
-    height: "100%",
-    borderRadius: Radius.pill,
-    backgroundColor: Colors.primary,
-  },
-  progressInfo: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: Spacing.sm,
-  },
-  progressText: {
-    ...Typography.caption,
-  },
-  masteredText: {
-    ...Typography.caption,
-    color: Colors.success,
-    fontWeight: "600",
-  },
+  progressHeader: { marginBottom: Spacing.md },
+  progressTitle: { ...Typography.h3 },
+  progressTrack: { height: 8, borderRadius: Radius.pill, backgroundColor: Colors.divider, overflow: "hidden" },
+  progressFill: { height: "100%", borderRadius: Radius.pill, backgroundColor: Colors.primary },
+  progressInfo: { flexDirection: "row", justifyContent: "space-between", marginTop: Spacing.sm },
+  progressText: { ...Typography.caption },
+  masteredText: { ...Typography.caption, color: Colors.success, fontWeight: "600" },
+
+  // Card generic
+  card: { backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg, marginBottom: Spacing.lg, ...Shadow.soft },
+  sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: Spacing.sm, marginBottom: Spacing.lg },
+  sectionTitle: { ...Typography.h3 },
 
   // Goals
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
+  goalItem: { marginBottom: Spacing.md },
+  goalHeader: { flexDirection: "row", alignItems: "center", marginBottom: Spacing.sm },
+  goalDot: { width: 8, height: 8, borderRadius: 4, marginRight: Spacing.sm },
+  goalLabel: { ...Typography.caption, color: Colors.textSecondary, flex: 1 },
+  goalValue: { ...Typography.caption, color: Colors.text, fontWeight: "600" },
+  goalTrack: { height: 6, borderRadius: Radius.pill, backgroundColor: Colors.divider, overflow: "hidden" },
+  goalFillNew: { height: "100%", borderRadius: Radius.pill, backgroundColor: Colors.gold },
+  goalFillReview: { height: "100%", borderRadius: Radius.pill, backgroundColor: Colors.success },
+
+  // Quick grid
+  quickGrid: { flexDirection: "row", justifyContent: "space-between", marginBottom: Spacing.xl },
+  quickItem: { alignItems: "center", gap: Spacing.xs, flex: 1 },
+  quickIcon: {
+    width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: Spacing.xs,
   },
-  sectionTitle: {
-    ...Typography.h3,
-  },
-  goalItem: {
-    marginBottom: Spacing.md,
-  },
-  goalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: Spacing.sm,
-  },
-  goalDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: Spacing.sm,
-  },
-  goalLabel: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
-    flex: 1,
-  },
-  goalValue: {
-    ...Typography.caption,
-    color: Colors.text,
-    fontWeight: "600",
-  },
-  goalTrack: {
-    height: 6,
-    borderRadius: Radius.pill,
-    backgroundColor: Colors.divider,
-    overflow: "hidden",
-  },
-  goalFillNew: {
-    height: "100%",
-    borderRadius: Radius.pill,
-    backgroundColor: Colors.gold,
-  },
-  goalFillReview: {
-    height: "100%",
-    borderRadius: Radius.pill,
-    backgroundColor: Colors.success,
-  },
+  quickLabel: { ...Typography.label, color: Colors.textSecondary },
 
   // Actions
-  actions: {
-    flexDirection: "row",
-    gap: Spacing.md,
-    marginTop: Spacing.sm,
-  },
-  actionBtn: {
-    flex: 1,
-    borderRadius: Radius.lg,
-    paddingVertical: Spacing.xl,
-    alignItems: "center",
-    gap: Spacing.xs,
-  },
-  actionPrimary: {
-    backgroundColor: Colors.primary,
-    ...Shadow.button,
-  },
-  actionSecondary: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1.5,
-    borderColor: Colors.accentBg,
-  },
-  actionPrimaryText: {
-    ...Typography.body,
-    color: "#FFFFFF",
-    fontWeight: "700",
-  },
-  actionPrimarySub: {
-    ...Typography.label,
-    color: "rgba(255,255,255,0.7)",
-  },
-  actionSecondaryText: {
-    ...Typography.body,
-    color: Colors.accent,
-    fontWeight: "700",
-  },
-  actionSecondarySub: {
-    ...Typography.label,
-    color: Colors.textMuted,
-  },
+  actions: { flexDirection: "row", gap: Spacing.md },
+  actionBtn: { flex: 1, borderRadius: Radius.lg, paddingVertical: Spacing.xl, alignItems: "center", gap: Spacing.xs },
+  actionPrimary: { backgroundColor: Colors.primary, ...Shadow.button },
+  actionSecondary: { backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.accentBg },
+  actionSecondaryDisabled: { backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.divider },
+  actionPrimaryText: { ...Typography.body, color: "#FFFFFF", fontWeight: "700" },
+  actionPrimarySub: { ...Typography.label, color: "rgba(255,255,255,0.7)" },
+  actionSecondaryText: { ...Typography.body, color: Colors.accent, fontWeight: "700" },
+  actionSecondarySub: { ...Typography.label, color: Colors.textMuted },
 
   // Modal
-  modalMask: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "flex-end",
-  },
+  modalMask: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "flex-end" },
   modalSheet: {
-    backgroundColor: Colors.surface,
-    borderTopLeftRadius: Radius.xl,
-    borderTopRightRadius: Radius.xl,
-    padding: Spacing.xl,
-    paddingBottom: 40,
+    backgroundColor: Colors.surface, borderTopLeftRadius: Radius.xl, borderTopRightRadius: Radius.xl,
+    padding: Spacing.xl, paddingBottom: 40,
   },
-  modalHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.divider,
-    alignSelf: "center",
-    marginBottom: Spacing.lg,
-  },
-  modalTitle: {
-    ...Typography.h3,
-    marginBottom: Spacing.lg,
-  },
+  modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: Colors.divider, alignSelf: "center", marginBottom: Spacing.lg },
+  modalTitle: { ...Typography.h3, marginBottom: Spacing.lg },
   bookItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.md,
-    borderRadius: Radius.md,
-    marginBottom: Spacing.sm,
+    flexDirection: "row", alignItems: "center", paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md, borderRadius: Radius.md, marginBottom: Spacing.sm,
   },
-  bookItemActive: {
-    backgroundColor: Colors.primaryBg,
-  },
-  bookItemLeft: {
-    marginRight: Spacing.md,
-  },
-  bookItemContent: {
-    flex: 1,
-  },
-  bookItemTitle: {
-    ...Typography.body,
-    fontWeight: "600",
-  },
-  bookItemMeta: {
-    ...Typography.label,
-    color: Colors.textMuted,
-    marginTop: Spacing.xs,
-  },
+  bookItemActive: { backgroundColor: Colors.primaryBg },
+  bookItemLeft: { marginRight: Spacing.md },
+  bookItemContent: { flex: 1 },
+  bookItemTitle: { ...Typography.body, fontWeight: "600" },
+  bookItemMeta: { ...Typography.label, color: Colors.textMuted, marginTop: Spacing.xs },
 });

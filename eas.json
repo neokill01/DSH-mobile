@@ -57,18 +57,27 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "updates": {
+        "url": "https://u.expo.dev/043fb6f4-5b62-4271-9026-e0c45c92d452"
+      }
     },
     "production-ios": {
       "autoIncrement": true,
       "ios": {
         "autoIncrement": "buildNumber"
+      },
+      "updates": {
+        "url": "https://u.expo.dev/043fb6f4-5b62-4271-9026-e0c45c92d452"
       }
     },
     "production-android": {
       "autoIncrement": true,
       "android": {
         "autoIncrement": "versionCode"
+      },
+      "updates": {
+        "url": "https://u.expo.dev/043fb6f4-5b62-4271-9026-e0c45c92d452"
       }
     }
   },
