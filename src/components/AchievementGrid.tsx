@@ -49,19 +49,11 @@ export default function AchievementGrid({ achievements }: AchievementGridProps) 
                   !achievement.unlocked && styles.iconWrapLocked,
                 ]}
               >
-                {achievement.unlocked ? (
-                  <Ionicons
-                    name={achievement.iconName}
-                    size={26}
-                    color={rarityColor.border}
-                  />
-                ) : (
-                  <Ionicons
-                    name="lock-closed"
-                    size={20}
-                    color={Colors.textMuted}
-                  />
-                )}
+                <Ionicons
+                  name={achievement.iconName}
+                  size={26}
+                  color={achievement.unlocked ? rarityColor.border : Colors.textMuted}
+                />
               </View>
               <Text
                 style={[
@@ -110,8 +102,7 @@ const styles = StyleSheet.create({
   },
   itemLocked: {
     backgroundColor: Colors.surfaceAlt,
-    shadowOpacity: 0,
-    opacity: 0.7,
+    borderColor: Colors.borderLight,
   },
   iconWrap: {
     width: 48,
