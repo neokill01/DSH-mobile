@@ -1,4 +1,5 @@
 // 登录页（云端模式）。本地演示模式显示提示，按钮禁用。
+// 青春活力风格：渐变按钮、更圆润输入框
 
 import { useState } from "react";
 import {
@@ -15,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { Colors, Spacing, Radius, Shadow } from "@/constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -40,21 +41,23 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={[styles.container, { paddingTop: insets.top + Spacing.xxl }]}
     >
+      {/* Logo */}
       <View style={styles.logoWrap}>
-        <Ionicons name="book" size={32} color={Colors.primary} />
+        <Ionicons name="book" size={36} color={Colors.white} />
       </View>
       <Text style={styles.title}>词记</Text>
       <Text style={styles.subtitle}>科学间隔重复 · 记住每一个单词</Text>
 
       {!isSupabaseConfigured && (
         <View style={styles.notice}>
-          <Ionicons name="information-circle" size={16} color={Colors.warning} />
+          <Ionicons name="information-circle" size={18} color={Colors.orange} />
           <Text style={styles.noticeText}>
             当前为本地演示模式，无需登录
           </Text>
         </View>
       )}
 
+      {/* 输入框 */}
       <View style={styles.inputGroup}>
         <View style={styles.inputWrap}>
           <Ionicons name="mail-outline" size={18} color={Colors.textMuted} style={styles.inputIcon} />
@@ -89,8 +92,13 @@ export default function LoginScreen() {
         </View>
       ) : null}
 
+      {/* 登录按钮 */}
       <Pressable
-        style={[styles.btn, (busy || !isSupabaseConfigured) && styles.btnDisabled]}
+        style={[
+          styles.btn,
+          (busy || !isSupabaseConfigured) && styles.btnDisabled,
+          busy || !isSupabaseConfigured ? {} : styles.btnPrimary,
+        ]}
         onPress={submit}
         disabled={busy || !isSupabaseConfigured}
       >
@@ -112,14 +120,17 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   logoWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: Colors.primaryBg,
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
+    ...Shadow.button,
   },
   title: {
     fontSize: 32,
@@ -129,79 +140,85 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
-    color: Colors.textTertiary,
+    ...Typography.caption,
     textAlign: "center",
-    marginTop: 6,
-    marginBottom: 32,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xxl,
   },
   notice: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    backgroundColor: Colors.warningBg,
+    gap: Spacing.sm,
+    backgroundColor: Colors.orangeBg,
     borderRadius: Radius.md,
-    padding: 12,
-    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: Colors.orange,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
   },
   noticeText: {
-    color: Colors.textSecondary,
-    fontSize: 13,
+    ...Typography.caption,
+    color: Colors.orange,
     flex: 1,
+    fontWeight: "500",
   },
   inputGroup: {
-    gap: 12,
-    marginBottom: 4,
+    gap: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
-    borderWidth: 1.5,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
     borderColor: Colors.border,
-    paddingHorizontal: 14,
+    paddingHorizontal: Spacing.md,
   },
   inputIcon: {
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
   input: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: Spacing.md,
     fontSize: 16,
     color: Colors.text,
   },
   errorBox: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginTop: 8,
-    marginBottom: 4,
+    gap: Spacing.xs,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   error: {
+    ...Typography.caption,
     color: Colors.danger,
-    fontSize: 13,
   },
   btn: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.md,
-    paddingVertical: 15,
+    borderRadius: Radius.pill,
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.md,
     alignItems: "center",
-    marginTop: 12,
-    ...Shadow.card,
+    backgroundColor: Colors.textMuted,
+    ...Shadow.button,
+  },
+  btnPrimary: {
+    backgroundColor: Colors.primary,
   },
   btnDisabled: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   btnText: {
-    color: "#FFFFFF",
+    color: Colors.white,
     fontSize: 17,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   link: {
     textAlign: "center",
-    marginTop: 20,
+    marginTop: Spacing.lg,
     color: Colors.primary,
     fontSize: 14,
+    fontWeight: "500",
   },
 });
