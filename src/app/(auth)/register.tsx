@@ -1,4 +1,5 @@
 // 注册页（云端模式）
+// 青春活力风格：渐变按钮、密码强度指示器
 
 import { useState } from "react";
 import {
@@ -15,7 +16,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { Colors, Spacing, Radius, Shadow } from "@/constants/theme";
+import { Colors, Spacing, Radius, Shadow, Typography } from "@/constants/theme";
+
+const getPasswordStrength = (pw: string): { level: number; color: string; label: string } => {
+  if (pw.length === 0) return { level: 0, color: Colors.divider, label: "" };
+  if (pw.length < 6) return { level: 1, color: Colors.danger, label: "弱" };
+  if (pw.length < 10) return { level: 2, color: Colors.gold, label: "中" };
+  return { level: 3, color: Colors.success, label: "强" };
+};
 
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
@@ -25,6 +33,8 @@ export default function RegisterScreen() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const strength = getPasswordStrength(password);
 
   const submit = async () => {
     if (busy) return;
@@ -49,12 +59,16 @@ export default function RegisterScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={[styles.container, { paddingTop: insets.top + Spacing.xxl }]}
     >
-      <View style={styles.logoWrap}>
-        <Ionicons name="person-add" size={32} color={Colors.primary} />
+      {/* Logo */}
+      <View
+        style={[styles.logoWrap, { backgroundColor: Colors.purple }]}
+      >
+        <Ionicons name="person-add" size={32} color={Colors.white} />
       </View>
       <Text style={styles.title}>创建账号</Text>
       <Text style={styles.subtitle}>注册后学习进度将同步到云端</Text>
 
+      {/* 输入框 */}
       <View style={styles.inputGroup}>
         <View style={styles.inputWrap}>
           <Ionicons name="mail-outline" size={18} color={Colors.textMuted} style={styles.inputIcon} />
@@ -69,16 +83,39 @@ export default function RegisterScreen() {
             onChangeText={setEmail}
           />
         </View>
-        <View style={styles.inputWrap}>
-          <Ionicons name="lock-closed-outline" size={18} color={Colors.textMuted} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="密码（至少 6 位）"
-            placeholderTextColor={Colors.textMuted}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+        <View>
+          <View style={styles.inputWrap}>
+            <Ionicons name="lock-closed-outline" size={18} color={Colors.textMuted} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="密码（至少 6 位）"
+              placeholderTextColor={Colors.textMuted}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+          {/* 密码强度指示器 */}
+          {password.length > 0 && (
+            <View style={styles.strengthRow}>
+              <View style={styles.strengthBars}>
+                {[1, 2, 3].map((i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.strengthBar,
+                      {
+                        backgroundColor: i <= strength.level ? strength.color : Colors.divider,
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+              <Text style={[styles.strengthLabel, { color: strength.color }]}>
+                {strength.label}
+              </Text>
+            </View>
+          )}
         </View>
         <View style={styles.inputWrap}>
           <Ionicons name="shield-checkmark-outline" size={18} color={Colors.textMuted} style={styles.inputIcon} />
@@ -100,12 +137,17 @@ export default function RegisterScreen() {
         </View>
       ) : null}
 
+      {/* 注册按钮 */}
       <Pressable
         style={[styles.btn, (busy || !isSupabaseConfigured) && styles.btnDisabled]}
         onPress={submit}
         disabled={busy || !isSupabaseConfigured}
       >
-        <Text style={styles.btnText}>{busy ? "注册中…" : "注 册"}</Text>
+        <View
+          style={[styles.btnGradient, { backgroundColor: busy || !isSupabaseConfigured ? Colors.textMuted : Colors.purple }]}
+        >
+          <Text style={styles.btnText}>{busy ? "注册中…" : "注 册"}</Text>
+        </View>
       </Pressable>
 
       <Link href="/login" style={styles.link}>
@@ -123,14 +165,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   logoWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: Colors.primaryBg,
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
+    ...Shadow.button,
   },
   title: {
     fontSize: 28,
@@ -140,65 +184,88 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
-    color: Colors.textTertiary,
+    ...Typography.caption,
     textAlign: "center",
-    marginTop: 6,
-    marginBottom: 32,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xxl,
   },
   inputGroup: {
-    gap: 12,
-    marginBottom: 4,
+    gap: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
-    borderWidth: 1.5,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
     borderColor: Colors.border,
-    paddingHorizontal: 14,
+    paddingHorizontal: Spacing.md,
   },
   inputIcon: {
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
   input: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: Spacing.md,
     fontSize: 16,
     color: Colors.text,
+  },
+  strengthRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
+  },
+  strengthBars: {
+    flexDirection: "row",
+    gap: Spacing.xs,
+    flex: 1,
+  },
+  strengthBar: {
+    height: 4,
+    flex: 1,
+    borderRadius: 2,
+  },
+  strengthLabel: {
+    ...Typography.badge,
   },
   errorBox: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginTop: 8,
-    marginBottom: 4,
+    gap: Spacing.xs,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   error: {
+    ...Typography.caption,
     color: Colors.danger,
-    fontSize: 13,
   },
   btn: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.md,
-    paddingVertical: 15,
+    borderRadius: Radius.pill,
+    marginTop: Spacing.md,
+    overflow: "hidden",
+    ...Shadow.button,
+  },
+  btnGradient: {
+    paddingVertical: Spacing.md,
     alignItems: "center",
-    marginTop: 12,
-    ...Shadow.card,
+    borderRadius: Radius.pill,
   },
   btnDisabled: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   btnText: {
-    color: "#FFFFFF",
+    color: Colors.white,
     fontSize: 17,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   link: {
     textAlign: "center",
-    marginTop: 20,
+    marginTop: Spacing.lg,
     color: Colors.primary,
     fontSize: 14,
+    fontWeight: "500",
   },
 });

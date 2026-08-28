@@ -12,7 +12,10 @@ import {
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
+import { Colors, Typography, Spacing, Radius } from "@/constants/theme";
+import GradientButton from "@/components/ui/GradientButton";
+import SectionTitle from "@/components/ui/SectionTitle";
+import Card from "@/components/ui/Card";
 import { getRepository } from "@/lib/repository";
 import type { LearningReport } from "@/types/database";
 
@@ -68,32 +71,29 @@ export default function ExportScreen() {
         </View>
 
         {/* 报告预览卡片 */}
-        <View style={styles.previewCard}>
-          <View style={styles.previewHeader}>
-            <Ionicons name="document-text" size={24} color={Colors.primary} />
-            <Text style={styles.previewTitle}>学习报告</Text>
-          </View>
+        <Card variant="elevated" style={styles.previewCard}>
+          <SectionTitle icon="document-text" title="学习报告" />
           <Text style={styles.previewDate}>
             生成时间: {new Date(report.generatedAt).toLocaleDateString("zh-CN")}
           </Text>
 
           {/* 概览数据 */}
           <View style={styles.statsGrid}>
-            <View style={styles.statBox}>
+            <View style={[styles.statBox, { backgroundColor: Colors.primary }]}>
               <Text style={styles.statValue}>{report.overview.totalLearned}</Text>
               <Text style={styles.statLabel}>总学词数</Text>
             </View>
-            <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: Colors.success }]}>{report.overview.mastered}</Text>
-              <Text style={styles.statLabel}>已掌握</Text>
+            <View style={[styles.statBox, { backgroundColor: Colors.success }]}>
+              <Text style={[styles.statValue, { color: Colors.white }]}>{report.overview.mastered}</Text>
+              <Text style={[styles.statLabel, { color: Colors.white }]}>已掌握</Text>
             </View>
-            <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: Colors.primary }]}>{report.vocabularyEstimate.toLocaleString()}</Text>
-              <Text style={styles.statLabel}>词汇量</Text>
+            <View style={[styles.statBox, { backgroundColor: Colors.primary }]}>
+              <Text style={[styles.statValue, { color: Colors.white }]}>{report.vocabularyEstimate.toLocaleString()}</Text>
+              <Text style={[styles.statLabel, { color: Colors.white }]}>词汇量</Text>
             </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{report.overview.learningDays}</Text>
-              <Text style={styles.statLabel}>学习天数</Text>
+            <View style={[styles.statBox, { backgroundColor: Colors.purple }]}>
+              <Text style={[styles.statValue, { color: Colors.white }]}>{report.overview.learningDays}</Text>
+              <Text style={[styles.statLabel, { color: Colors.white }]}>学习天数</Text>
             </View>
           </View>
 
@@ -122,7 +122,7 @@ export default function ExportScreen() {
               </View>
             ))}
           </View>
-        </View>
+        </Card>
 
         {/* 导出按钮 */}
         {exported ? (
@@ -131,16 +131,14 @@ export default function ExportScreen() {
             <Text style={styles.successText}>报告已生成！</Text>
           </View>
         ) : (
-          <Pressable
-            style={[styles.exportBtn, generating && styles.exportBtnDisabled]}
+          <GradientButton
             onPress={exportPdf}
+            loading={generating}
             disabled={generating}
+            size="lg"
           >
-            <Ionicons name="download" size={20} color="#FFFFFF" />
-            <Text style={styles.exportBtnText}>
-              {generating ? "生成中..." : "导出 PDF 报告"}
-            </Text>
-          </Pressable>
+            {generating ? "生成中..." : "导出 PDF 报告"}
+          </GradientButton>
         )}
       </ScrollView>
     </View>
@@ -153,26 +151,30 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.xl },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: Spacing.xl },
   backBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.surface,
-    alignItems: "center", justifyContent: "center", ...Shadow.soft,
+    width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.surface,
+    alignItems: "center", justifyContent: "center",
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 1,
+    borderWidth: 1, borderColor: Colors.border,
   },
   topTitle: { ...Typography.h3 },
   previewCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.xl, padding: Spacing.xl,
-    marginBottom: Spacing.xl, ...Shadow.card,
+    marginBottom: Spacing.xl,
   },
-  previewHeader: { flexDirection: "row", alignItems: "center", gap: Spacing.sm, marginBottom: Spacing.sm },
-  previewTitle: { ...Typography.h2 },
   previewDate: { ...Typography.caption, color: Colors.textMuted, marginBottom: Spacing.xl },
   statsGrid: {
     flexDirection: "row", flexWrap: "wrap", gap: Spacing.md, marginBottom: Spacing.xl,
   },
   statBox: {
-    width: "47%", backgroundColor: Colors.background, borderRadius: Radius.md,
+    width: "47%", borderRadius: Radius.md,
     padding: Spacing.lg, alignItems: "center",
+    borderWidth: 1, borderColor: Colors.border,
   },
-  statValue: { fontSize: 22, fontWeight: "700", color: Colors.text },
-  statLabel: { ...Typography.label, color: Colors.textMuted, marginTop: Spacing.xs },
+  statValue: { fontSize: 22, fontWeight: "700", color: Colors.white },
+  statLabel: { ...Typography.label, color: Colors.white, marginTop: Spacing.xs },
   sectionTitle: { ...Typography.h3, marginBottom: Spacing.md },
   weakSection: { marginBottom: Spacing.xl },
   weakList: { gap: Spacing.sm },
@@ -185,17 +187,11 @@ const styles = StyleSheet.create({
   suggestionsSection: { marginBottom: Spacing.md },
   suggestionItem: { flexDirection: "row", alignItems: "center", gap: Spacing.sm, marginBottom: Spacing.sm },
   suggestionText: { flex: 1, ...Typography.caption, color: Colors.textSecondary },
-  exportBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center",
-    backgroundColor: Colors.primary, borderRadius: Radius.lg, paddingVertical: Spacing.xl,
-    gap: Spacing.sm, ...Shadow.button,
-  },
-  exportBtnDisabled: { opacity: 0.5 },
-  exportBtnText: { ...Typography.body, color: "#FFFFFF", fontWeight: "700" },
   successBox: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     backgroundColor: Colors.successBg, borderRadius: Radius.lg, padding: Spacing.xl,
     gap: Spacing.sm,
+    borderWidth: 1, borderColor: Colors.success,
   },
   successText: { ...Typography.body, color: Colors.success, fontWeight: "600" },
 });

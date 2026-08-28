@@ -1,10 +1,13 @@
+// Tab 栏布局 - Claymorphism 风格
+// 选中态：图标 + 文字在一个圆润胶囊中
+
 import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { Colors } from "@/constants/theme";
+import { Colors, Radius, Spacing } from "@/constants/theme";
 
 export default function TabsLayout() {
   const { user, loading } = useAuth();
@@ -13,7 +16,6 @@ export default function TabsLayout() {
   if (loading) return null;
   if (isSupabaseConfigured && !user) return <Redirect href="/login" />;
 
-  // 底部安全区域间距：确保 Tab 栏不与 Home 指示条重叠
   const bottomPadding = Math.max(insets.bottom + 4, 16);
 
   return (
@@ -24,20 +26,27 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: Colors.textMuted,
         tabBarStyle: [
           styles.tabBar,
-          { 
+          {
             paddingBottom: bottomPadding,
-            height: 56 + bottomPadding,
+            height: 64 + bottomPadding,
           },
         ],
         tabBarLabelStyle: styles.tabLabel,
+        tabBarIconStyle: styles.tabIconStyle,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "学习",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="book-outline" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={[styles.tabIconWrap, focused && styles.tabIconActive]}>
+              <Ionicons
+                name={focused ? "book" : "book-outline"}
+                color={focused ? Colors.white : color}
+                size={22}
+              />
+            </View>
           ),
         }}
       />
@@ -45,8 +54,14 @@ export default function TabsLayout() {
         name="stats"
         options={{
           title: "统计",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart-outline" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={[styles.tabIconWrap, focused && styles.tabIconActive]}>
+              <Ionicons
+                name={focused ? "stats-chart" : "stats-chart-outline"}
+                color={focused ? Colors.white : color}
+                size={22}
+              />
+            </View>
           ),
         }}
       />
@@ -54,8 +69,14 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: "我的",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={[styles.tabIconWrap, focused && styles.tabIconActive]}>
+              <Ionicons
+                name={focused ? "person" : "person-outline"}
+                color={focused ? Colors.white : color}
+                size={22}
+              />
+            </View>
           ),
         }}
       />
@@ -66,15 +87,38 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: Colors.surface,
-    borderTopWidth: 0,
     elevation: 8,
     shadowColor: Colors.text,
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.06,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: -2 },
+    // Claymorphism: thin top border
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
   tabLabel: {
     fontSize: 11,
     fontWeight: "600",
+    marginTop: 4,
+  },
+  tabIconStyle: {
+    // Gap between icon and label
+    marginBottom: -2,
+  },
+  tabIconWrap: {
+    width: 44,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tabIconActive: {
+    backgroundColor: Colors.primary,
+    width: 56,
+    height: 32,
+    borderRadius: 16,
+    // Claymorphism: thick border on active tab
+    borderWidth: 1,
+    borderColor: Colors.primary,
   },
 });

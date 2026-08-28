@@ -15,6 +15,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import { getRepository } from "@/lib/repository";
 import type { WrongWord } from "@/types/database";
+import GradientButton from "@/components/ui/GradientButton";
+import SectionTitle from "@/components/ui/SectionTitle";
+import Card from "@/components/ui/Card";
 
 export default function AiArticleScreen() {
   const insets = useSafeAreaInsets();
@@ -85,42 +88,53 @@ export default function AiArticleScreen() {
         </Text>
 
         {/* 选择错词 */}
-        <Text style={styles.sectionTitle}>选择单词（至少2个）</Text>
+        <SectionTitle icon="language" title="选择单词（至少2个）" />
+
         <View style={styles.wordGrid}>
-          {wrongWords.map((w) => (
-            <Pressable
-              key={w.id}
-              style={[styles.wordChip, selectedIds.includes(w.id) && styles.wordChipActive]}
-              onPress={() => toggleWord(w.id)}
-            >
-              <Text style={[styles.wordChipText, selectedIds.includes(w.id) && styles.wordChipTextActive]}>
-                {w.word.spelling}
-              </Text>
-            </Pressable>
-          ))}
+          {wrongWords.map((w) => {
+            const active = selectedIds.includes(w.id);
+            return (
+              <Pressable
+                key={w.id}
+                onPress={() => toggleWord(w.id)}
+              >
+                {active ? (
+                  <View style={[styles.wordChip, { backgroundColor: Colors.primary }]}>
+                    <Text style={styles.wordChipTextActive}>
+                      {w.word.spelling}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.wordChip}>
+                    <Text style={styles.wordChipText}>
+                      {w.word.spelling}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
         </View>
 
         {/* 生成按钮 */}
-        <Pressable
-          style={[styles.generateBtn, (selectedIds.length < 2 || generating) && styles.generateBtnDisabled]}
+        <GradientButton
           onPress={generateArticle}
           disabled={selectedIds.length < 2 || generating}
+          loading={generating}
+          fullWidth
         >
-          <Ionicons name="sparkles" size={20} color="#FFFFFF" />
-          <Text style={styles.generateBtnText}>
-            {generating ? "生成中..." : "生成 AI 短文"}
-          </Text>
-        </Pressable>
+          {generating ? "生成中..." : "生成 AI 短文"}
+        </GradientButton>
 
         {/* 短文内容 */}
         {article && (
-          <View style={styles.articleCard}>
+          <Card variant="elevated" style={styles.articleCard}>
             <View style={styles.articleHeader}>
               <Ionicons name="book" size={20} color={Colors.primary} />
               <Text style={styles.articleTitle}>阅读材料</Text>
             </View>
             <Text style={styles.articleContent}>{article}</Text>
-          </View>
+          </Card>
         )}
       </ScrollView>
     </View>
@@ -133,31 +147,22 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.xl },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: Spacing.xl },
   backBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.surface,
+    width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.surface,
     alignItems: "center", justifyContent: "center", ...Shadow.soft,
+    borderWidth: 1, borderColor: Colors.border,
   },
   topTitle: { ...Typography.h3 },
   desc: { ...Typography.caption, color: Colors.textSecondary, marginBottom: Spacing.xl },
-  sectionTitle: { ...Typography.h3, marginBottom: Spacing.md },
   wordGrid: { flexDirection: "row", flexWrap: "wrap", gap: Spacing.sm, marginBottom: Spacing.xl },
   wordChip: {
     paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm,
     borderRadius: Radius.pill, backgroundColor: Colors.surface,
-    borderWidth: 1.5, borderColor: Colors.border,
+    borderWidth: 1, borderColor: Colors.border,
   },
-  wordChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   wordChipText: { ...Typography.body, fontWeight: "600", color: Colors.text },
-  wordChipTextActive: { color: "#FFFFFF" },
-  generateBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center",
-    backgroundColor: Colors.primary, borderRadius: Radius.lg, paddingVertical: Spacing.xl,
-    gap: Spacing.sm, ...Shadow.button,
-  },
-  generateBtnDisabled: { opacity: 0.5 },
-  generateBtnText: { ...Typography.body, color: "#FFFFFF", fontWeight: "700" },
+  wordChipTextActive: { ...Typography.body, fontWeight: "600", color: Colors.white },
   articleCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.xl, padding: Spacing.xl,
-    marginTop: Spacing.xl, ...Shadow.card,
+    marginTop: Spacing.xl,
   },
   articleHeader: { flexDirection: "row", alignItems: "center", gap: Spacing.sm, marginBottom: Spacing.lg },
   articleTitle: { ...Typography.h3 },

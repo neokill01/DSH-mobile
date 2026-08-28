@@ -15,6 +15,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import { getRepository } from "@/lib/repository";
 import type { Course, CourseLevel as LevelType } from "@/types/database";
+import SectionTitle from "@/components/ui/SectionTitle";
+import Card from "@/components/ui/Card";
 
 export default function CourseLevelScreen() {
   const insets = useSafeAreaInsets();
@@ -70,7 +72,7 @@ export default function CourseLevelScreen() {
         <Text style={styles.courseDesc}>{course?.description}</Text>
 
         {/* 等级列表 */}
-        <Text style={styles.sectionTitle}>学习等级</Text>
+        <SectionTitle icon="school" title="学习等级" />
         {levels.map((level, index) => {
           const isActive = level.status === "active";
           const isLocked = level.status === "locked";
@@ -80,32 +82,51 @@ export default function CourseLevelScreen() {
             <Pressable
               key={level.id}
               style={[
-                styles.levelCard,
-                isActive && styles.levelCardActive,
-                isLocked && styles.levelCardLocked,
+                styles.levelCardWrapper,
+                isActive && styles.levelCardWrapperActive,
+                isLocked && styles.levelCardWrapperLocked,
               ]}
               onPress={() => !isLocked && router.push(`/course/unit?levelId=${level.id}`)}
               disabled={isLocked}
             >
-              <View style={styles.levelRow}>
-                <View style={[styles.levelNumber, isActive && styles.levelNumberActive]}>
-                  <Text style={[styles.levelNumberText, isActive && styles.levelNumberTextActive]}>
-                    {level.levelNumber}
-                  </Text>
+              <Card
+                padding={Spacing.lg}
+                style={
+                  isActive
+                    ? { borderWidth: 1, borderColor: Colors.primary }
+                    : isLocked
+                      ? { opacity: 0.6 }
+                      : undefined
+                }
+              >
+                <View style={styles.levelRow}>
+                  {isActive ? (
+                    <View style={[styles.levelNumber, { backgroundColor: Colors.primary, borderWidth: 1, borderColor: Colors.primary }]}>
+                      <Text style={styles.levelNumberTextActive}>
+                        {level.levelNumber}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={styles.levelNumber}>
+                      <Text style={styles.levelNumberText}>
+                        {level.levelNumber}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.levelInfo}>
+                    <Text style={styles.levelTitle}>{level.title}</Text>
+                    <Text style={styles.levelDesc}>{level.description}</Text>
+                    <Text style={styles.levelMeta}>
+                      {level.unitCount} 单元 · {level.wordCount} 词
+                    </Text>
+                  </View>
+                  <View style={styles.levelStatus}>
+                    {isLocked && <Ionicons name="lock-closed" size={20} color={Colors.textMuted} />}
+                    {isActive && <Ionicons name="play-circle" size={24} color={Colors.primary} />}
+                    {isCompleted && <Ionicons name="checkmark-circle" size={24} color={Colors.success} />}
+                  </View>
                 </View>
-                <View style={styles.levelInfo}>
-                  <Text style={styles.levelTitle}>{level.title}</Text>
-                  <Text style={styles.levelDesc}>{level.description}</Text>
-                  <Text style={styles.levelMeta}>
-                    {level.unitCount} 单元 · {level.wordCount} 词
-                  </Text>
-                </View>
-                <View style={styles.levelStatus}>
-                  {isLocked && <Ionicons name="lock-closed" size={20} color={Colors.textMuted} />}
-                  {isActive && <Ionicons name="play-circle" size={24} color={Colors.primary} />}
-                  {isCompleted && <Ionicons name="checkmark-circle" size={24} color={Colors.success} />}
-                </View>
-              </View>
+              </Card>
             </Pressable>
           );
         })}
@@ -120,26 +141,25 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.xl },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: Spacing.xl },
   backBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.surface,
+    width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.surface,
     alignItems: "center", justifyContent: "center", ...Shadow.soft,
+    borderWidth: 1, borderColor: Colors.border,
   },
   topTitle: { ...Typography.h3 },
   courseDesc: { ...Typography.caption, color: Colors.textSecondary, marginBottom: Spacing.xl },
-  sectionTitle: { ...Typography.h3, marginBottom: Spacing.md },
-  levelCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg,
-    marginBottom: Spacing.md, ...Shadow.soft,
+  levelCardWrapper: {
+    marginBottom: Spacing.md,
   },
-  levelCardActive: { borderWidth: 2, borderColor: Colors.primary },
-  levelCardLocked: { opacity: 0.6 },
+  levelCardWrapperActive: {},
+  levelCardWrapperLocked: {},
   levelRow: { flexDirection: "row", alignItems: "center", gap: Spacing.md },
   levelNumber: {
     width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.divider,
     alignItems: "center", justifyContent: "center",
+    borderWidth: 1, borderColor: Colors.border,
   },
-  levelNumberActive: { backgroundColor: Colors.primary },
   levelNumberText: { ...Typography.body, fontWeight: "700", color: Colors.textMuted },
-  levelNumberTextActive: { color: "#FFFFFF" },
+  levelNumberTextActive: { ...Typography.body, fontWeight: "700", color: "#FFFFFF" },
   levelInfo: { flex: 1 },
   levelTitle: { ...Typography.body, fontWeight: "600" },
   levelDesc: { ...Typography.caption, color: Colors.textMuted, marginTop: Spacing.xs },

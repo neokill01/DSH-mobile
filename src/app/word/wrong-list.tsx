@@ -15,6 +15,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import { getRepository } from "@/lib/repository";
 import type { WrongWord } from "@/types/database";
+import GradientButton from "@/components/ui/GradientButton";
+import Badge from "@/components/ui/Badge";
+import Card from "@/components/ui/Card";
+import EmptyState from "@/components/ui/EmptyState";
+import SectionTitle from "@/components/ui/SectionTitle";
 
 type FilterType = "all" | "new" | "learning" | "mastered";
 
@@ -25,10 +30,17 @@ const FILTERS: { key: FilterType; label: string }[] = [
   { key: "mastered", label: "已掌握" },
 ];
 
-const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
-  new: { label: "新错词", color: Colors.danger, bg: Colors.dangerBg },
-  learning: { label: "学习中", color: Colors.gold, bg: Colors.goldBg },
-  mastered: { label: "已掌握", color: Colors.success, bg: Colors.successBg },
+const STATUS_MAP: Record<string, { label: string; color: string; bg: string; badgeVariant: "danger" | "gold" | "success" }> = {
+  new: { label: "新错词", color: Colors.danger, bg: Colors.dangerBg, badgeVariant: "danger" },
+  learning: { label: "学习中", color: Colors.gold, bg: Colors.goldBg, badgeVariant: "gold" },
+  mastered: { label: "已掌握", color: Colors.success, bg: Colors.successBg, badgeVariant: "success" },
+};
+
+const STAT_COLORS: Record<string, string> = {
+  total: Colors.primary,
+  new: Colors.danger,
+  learning: Colors.gold,
+  mastered: Colors.success,
 };
 
 export default function WrongWordListScreen() {
@@ -91,59 +103,83 @@ export default function WrongWordListScreen() {
             <Ionicons name="arrow-back" size={24} color={Colors.text} />
           </Pressable>
           <Text style={styles.topTitle}>错词本</Text>
-          <View style={{ width: 40 }} />
+          <View style={{ width: 44 }} />
         </View>
 
         {/* 统计卡片 */}
-        <View style={styles.statsCard}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.total}</Text>
-            <Text style={styles.statLabel}>总错词</Text>
+        <Card variant="elevated" style={styles.statsCard}>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <View
+                style={[styles.statValueWrap, { backgroundColor: STAT_COLORS.total }]}
+              >
+                <Text style={styles.statValueText}>{stats.total}</Text>
+              </View>
+              <Text style={styles.statLabel}>总错词</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <View
+                style={[styles.statValueWrap, { backgroundColor: STAT_COLORS.new }]}
+              >
+                <Text style={styles.statValueText}>{stats.newCount}</Text>
+              </View>
+              <Text style={styles.statLabel}>新错词</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <View
+                style={[styles.statValueWrap, { backgroundColor: STAT_COLORS.learning }]}
+              >
+                <Text style={styles.statValueText}>{stats.learningCount}</Text>
+              </View>
+              <Text style={styles.statLabel}>学习中</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <View
+                style={[styles.statValueWrap, { backgroundColor: STAT_COLORS.mastered }]}
+              >
+                <Text style={styles.statValueText}>{stats.masteredCount}</Text>
+              </View>
+              <Text style={styles.statLabel}>已掌握</Text>
+            </View>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: Colors.danger }]}>{stats.newCount}</Text>
-            <Text style={styles.statLabel}>新错词</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: Colors.gold }]}>{stats.learningCount}</Text>
-            <Text style={styles.statLabel}>学习中</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: Colors.success }]}>{stats.masteredCount}</Text>
-            <Text style={styles.statLabel}>已掌握</Text>
-          </View>
-        </View>
+        </Card>
 
         {/* 筛选标签 */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
           {FILTERS.map((f) => (
             <Pressable
               key={f.key}
-              style={[styles.filterTag, filter === f.key && styles.filterTagActive]}
               onPress={() => setFilter(f.key)}
             >
-              <Text style={[styles.filterText, filter === f.key && styles.filterTextActive]}>
-                {f.label}
-              </Text>
+              {filter === f.key ? (
+                <View style={[styles.filterTagGradient, { backgroundColor: Colors.primary }]}>
+                  <Text style={styles.filterTextActive}>{f.label}</Text>
+                </View>
+              ) : (
+                <View style={styles.filterTag}>
+                  <Text style={styles.filterText}>{f.label}</Text>
+                </View>
+              )}
             </Pressable>
           ))}
         </ScrollView>
 
         {/* 错词列表 */}
         {filteredWords.length === 0 ? (
-          <View style={styles.emptyBox}>
-            <Ionicons name="checkmark-circle-outline" size={48} color={Colors.success} />
-            <Text style={styles.emptyTitle}>太棒了！</Text>
-            <Text style={styles.emptyDesc}>{filter === "all" ? "暂无错词" : `没有${FILTERS.find(f => f.key === filter)?.label ?? ""}的错词`}</Text>
-          </View>
+          <EmptyState
+            icon="checkmark-circle-outline"
+            title="太棒了！"
+            description={filter === "all" ? "暂无错词" : `没有${FILTERS.find(f => f.key === filter)?.label ?? ""}的错词`}
+            iconColor={Colors.success}
+          />
         ) : (
           filteredWords.map((wrongWord) => {
             const statusInfo = STATUS_MAP[wrongWord.status] ?? STATUS_MAP.new;
             return (
-              <View key={wrongWord.id} style={styles.wordCard}>
+              <Card key={wrongWord.id} style={styles.wordCard}>
                 <View style={styles.wordRow}>
                   <View style={styles.wordInfo}>
                     <Text style={styles.wordSpelling}>{wrongWord.word.spelling}</Text>
@@ -152,9 +188,10 @@ export default function WrongWordListScreen() {
                       {wrongWord.word.definitions[0]?.meaning ?? ""}
                     </Text>
                   </View>
-                  <View style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}>
-                    <Text style={[styles.statusText, { color: statusInfo.color }]}>{statusInfo.label}</Text>
-                  </View>
+                  <Badge
+                    label={statusInfo.label}
+                    variant={statusInfo.badgeVariant}
+                  />
                 </View>
                 <View style={styles.wordMeta}>
                   <Text style={styles.metaText}>答错 {wrongWord.wrongCount} 次</Text>
@@ -164,7 +201,7 @@ export default function WrongWordListScreen() {
                     </Pressable>
                   )}
                 </View>
-              </View>
+              </Card>
             );
           })
         )}
@@ -183,9 +220,9 @@ export default function WrongWordListScreen() {
 
         {/* 复习按钮 */}
         {words.filter((w) => w.status !== "mastered").length > 0 && (
-          <Pressable style={styles.reviewBtn} onPress={startReview}>
-            <Text style={styles.reviewBtnText}>开始复习错词</Text>
-          </Pressable>
+          <GradientButton onPress={startReview} size="lg">
+            开始复习错词
+          </GradientButton>
         )}
       </ScrollView>
     </View>
@@ -198,54 +235,68 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.xl },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: Spacing.xl },
   backBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.surface,
+    width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.surface,
     alignItems: "center", justifyContent: "center", ...Shadow.soft,
   },
   topTitle: { ...Typography.h3 },
+
+  // 统计卡片
   statsCard: {
-    flexDirection: "row", backgroundColor: Colors.surface, borderRadius: Radius.lg,
-    padding: Spacing.lg, marginBottom: Spacing.xl, ...Shadow.card,
+    marginBottom: Spacing.xl,
+  },
+  statsRow: {
+    flexDirection: "row",
   },
   statItem: { flex: 1, alignItems: "center" },
+  statValueWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: Radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.xs,
+  },
+  statValueText: {
+    ...Typography.stat,
+    color: Colors.white,
+    fontSize: 20,
+  },
   statDivider: { width: 1, backgroundColor: Colors.divider },
-  statValue: { fontSize: 22, fontWeight: "700", color: Colors.text },
   statLabel: { ...Typography.label, color: Colors.textMuted, marginTop: Spacing.xs },
+
+  // 筛选标签
   filterRow: { marginBottom: Spacing.lg },
   filterTag: {
     paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm,
     borderRadius: Radius.pill, backgroundColor: Colors.surface,
     marginRight: Spacing.sm, borderWidth: 1, borderColor: Colors.border,
   },
-  filterTagActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  filterTagGradient: {
+    paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm,
+    borderRadius: Radius.pill, marginRight: Spacing.sm,
+  },
   filterText: { ...Typography.label, color: Colors.textSecondary },
-  filterTextActive: { color: "#FFFFFF" },
-  emptyBox: { alignItems: "center", paddingVertical: Spacing.xxxl },
-  emptyTitle: { ...Typography.h3, marginTop: Spacing.md },
-  emptyDesc: { ...Typography.caption, color: Colors.textMuted, marginTop: Spacing.sm },
+  filterTextActive: { ...Typography.label, color: Colors.white },
+
+  // 错词卡片
   wordCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg,
-    marginBottom: Spacing.md, ...Shadow.soft,
+    marginBottom: Spacing.md,
   },
   wordRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
-  wordInfo: { flex: 1 },
+  wordInfo: { flex: 1, marginRight: Spacing.sm },
   wordSpelling: { fontSize: 18, fontWeight: "700", color: Colors.text },
   wordPhonetic: { ...Typography.caption, color: Colors.textMuted, marginTop: Spacing.xs },
   wordMeaning: { ...Typography.caption, color: Colors.textSecondary, marginTop: Spacing.xs },
-  statusBadge: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs, borderRadius: Radius.pill },
-  statusText: { ...Typography.label, fontWeight: "600" },
   wordMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: Spacing.md },
   metaText: { ...Typography.label, color: Colors.textMuted },
   markBtn: { ...Typography.label, color: Colors.primary, fontWeight: "600" },
+
+  // AI 卡片
   aiCard: {
     flexDirection: "row", alignItems: "center", backgroundColor: Colors.primaryBg,
-    borderRadius: Radius.lg, padding: Spacing.lg, marginBottom: Spacing.md, gap: Spacing.md,
+    borderRadius: Radius.xl, padding: Spacing.lg, marginBottom: Spacing.md, gap: Spacing.md,
   },
   aiInfo: { flex: 1 },
   aiTitle: { ...Typography.body, fontWeight: "600", color: Colors.primary },
   aiDesc: { ...Typography.caption, color: Colors.textSecondary, marginTop: Spacing.xs },
-  reviewBtn: {
-    backgroundColor: Colors.primary, borderRadius: Radius.lg, paddingVertical: Spacing.xl,
-    alignItems: "center", ...Shadow.button,
-  },
-  reviewBtnText: { ...Typography.body, color: "#FFFFFF", fontWeight: "700" },
 });

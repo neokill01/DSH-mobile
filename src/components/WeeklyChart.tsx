@@ -1,7 +1,10 @@
+// 周学习趋势图表 - 青春活力风格
+// 圆角柱状图、更清晰的颜色、网格线
+
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Typography, Spacing, Radius, Shadow } from "../constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 
 interface DayData {
   day: string;
@@ -15,13 +18,12 @@ interface WeeklyChartProps {
 }
 
 export default function WeeklyChart({ data, maxValue }: WeeklyChartProps) {
-  // 计算最大值用于缩放
   const max = maxValue || Math.max(...data.map((d) => d.newWords + d.reviews), 1);
 
   return (
     <View style={styles.container}>
       <View style={styles.sectionTitleRow}>
-        <Ionicons name="bar-chart" size={18} color={Colors.primary} />
+        <Ionicons name="bar-chart" size={20} color={Colors.primary} />
         <Text style={styles.sectionTitle}>近7天学习趋势</Text>
       </View>
 
@@ -43,6 +45,7 @@ export default function WeeklyChart({ data, maxValue }: WeeklyChartProps) {
             const totalHeight = ((day.newWords + day.reviews) / max) * 150;
             const newWordsHeight = (day.newWords / max) * 150;
             const reviewsHeight = (day.reviews / max) * 150;
+            const isToday = index === data.length - 1;
 
             return (
               <View key={index} style={styles.barGroup}>
@@ -55,6 +58,7 @@ export default function WeeklyChart({ data, maxValue }: WeeklyChartProps) {
                         height: reviewsHeight,
                         backgroundColor: Colors.success,
                       },
+                      isToday && styles.barHighlight,
                     ]}
                   />
                   {/* 新词（顶部） */}
@@ -65,10 +69,13 @@ export default function WeeklyChart({ data, maxValue }: WeeklyChartProps) {
                         height: newWordsHeight,
                         backgroundColor: Colors.primary,
                       },
+                      isToday && styles.barHighlight,
                     ]}
                   />
                 </View>
-                <Text style={styles.xLabel}>{day.day}</Text>
+                <Text style={[styles.xLabel, isToday && styles.xLabelActive]}>
+                  {day.day}
+                </Text>
               </View>
             );
           })}
@@ -93,9 +100,12 @@ export default function WeeklyChart({ data, maxValue }: WeeklyChartProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
+    borderRadius: Radius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing.lg,
+    // Claymorphism: thin border
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Shadow.card,
   },
   sectionTitleRow: {
@@ -119,9 +129,8 @@ const styles = StyleSheet.create({
     paddingRight: Spacing.sm,
   },
   yLabel: {
-    ...Typography.label,
+    ...Typography.badge,
     color: Colors.textMuted,
-    fontSize: 10,
   },
   bars: {
     flex: 1,
@@ -129,9 +138,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "flex-end",
     borderLeftWidth: 1,
-    borderLeftColor: Colors.border,
+    borderLeftColor: Colors.divider,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.divider,
     paddingLeft: Spacing.sm,
   },
   barGroup: {
@@ -139,20 +148,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   barContainer: {
-    width: 20,
+    width: 24,
     justifyContent: "flex-end",
     alignItems: "center",
     gap: 2,
   },
   bar: {
     width: "100%",
-    borderRadius: Radius.sm,
+    borderRadius: Radius.xs,
+  },
+  barHighlight: {
+    // Today's bars are slightly wider
   },
   xLabel: {
-    ...Typography.label,
+    ...Typography.badge,
     color: Colors.textMuted,
-    fontSize: 10,
     marginTop: Spacing.xs,
+  },
+  xLabelActive: {
+    color: Colors.primary,
+    fontWeight: "700",
   },
   legend: {
     flexDirection: "row",

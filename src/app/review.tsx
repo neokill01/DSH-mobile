@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { RatingBar } from "@/components/RatingBar";
 import { WordCard } from "@/components/WordCard";
+import GradientButton from "@/components/ui/GradientButton";
 import { getRepository } from "@/lib/repository";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import type { StoredCard, Word } from "@/types/database";
@@ -119,8 +120,8 @@ export default function ReviewScreen() {
   if (done || queue.length === 0) {
     return (
       <View style={[styles.center, { paddingTop: insets.top }]}>
-        <View style={styles.doneIconWrap}>
-          <Ionicons name="checkmark-done" size={48} color={Colors.success} />
+        <View style={[styles.doneIconWrap, { backgroundColor: Colors.success }]}>
+          <Ionicons name="checkmark-done" size={48} color={Colors.white} />
         </View>
         <Text style={styles.doneTitle}>{queue.length === 0 ? "暂无任务" : "本组完成！"}</Text>
         <Text style={styles.doneDesc}>
@@ -128,9 +129,9 @@ export default function ReviewScreen() {
             ? `学习了 ${queue.length} 个新词，已按 FSRS 排好复习计划`
             : `完成 ${queue.length} 个词的复习，遗忘曲线正在优化`}
         </Text>
-        <Pressable style={styles.retryBtn} onPress={() => load()}>
-          <Text style={styles.retryText}>{queue.length === 0 ? "刷新看看" : "再来一组"}</Text>
-        </Pressable>
+        <GradientButton onPress={() => load()} style={styles.doneButton}>
+          {queue.length === 0 ? "刷新看看" : "再来一组"}
+        </GradientButton>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backText}>返回首页</Text>
         </Pressable>
@@ -161,7 +162,7 @@ export default function ReviewScreen() {
         <View
           style={[
             styles.progressFill,
-            { width: `${((index + (flipped ? 1 : 0)) / queue.length) * 100}%` },
+            { width: `${((index + (flipped ? 1 : 0)) / queue.length) * 100}%`, backgroundColor: Colors.primary },
           ]}
         />
       </View>
@@ -209,12 +210,14 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.surface,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Shadow.soft,
   },
   progressInfo: {
@@ -230,7 +233,7 @@ const styles = StyleSheet.create({
 
   // Progress
   progressTrack: {
-    height: 6,
+    height: 8,
     borderRadius: Radius.pill,
     backgroundColor: Colors.divider,
     overflow: "hidden",
@@ -239,7 +242,6 @@ const styles = StyleSheet.create({
   progressFill: {
     height: "100%",
     borderRadius: Radius.pill,
-    backgroundColor: Colors.primary,
   },
 
   cardArea: {
@@ -258,6 +260,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
     borderRadius: Radius.pill,
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Shadow.soft,
   },
   flipHint: {
@@ -270,9 +274,10 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.successBg,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: Colors.success,
     marginBottom: Spacing.lg,
   },
   doneTitle: { ...Typography.h2 },
@@ -283,6 +288,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xxl,
     lineHeight: 22,
   },
+  doneButton: {
+    marginBottom: Spacing.md,
+  },
   errorText: {
     ...Typography.caption,
     color: Colors.danger,
@@ -292,9 +300,11 @@ const styles = StyleSheet.create({
   },
   retryBtn: {
     backgroundColor: Colors.primary,
-    borderRadius: Radius.md,
+    borderRadius: Radius.pill,
     paddingHorizontal: Spacing.xxxl,
     paddingVertical: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.primary,
     ...Shadow.button,
   },
   retryText: { ...Typography.body, color: "#FFFFFF", fontWeight: "600" },

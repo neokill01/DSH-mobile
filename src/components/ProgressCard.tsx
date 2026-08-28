@@ -1,13 +1,17 @@
+// 进度卡片组件 - 青春活力风格
+// 渐变进度条、更圆润、更清晰的视觉
+
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Colors, Typography, Spacing, Radius, Shadow } from "../constants/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 
 interface ProgressCardProps {
   title: string;
   current: number;
   total: number;
   color?: string;
-  icon?: string;
+  icon?: keyof typeof Ionicons.glyphMap;
 }
 
 export default function ProgressCard({
@@ -22,9 +26,13 @@ export default function ProgressCard({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        {icon && <Text style={styles.icon}>{icon}</Text>}
+        {icon && (
+          <View style={[styles.iconWrap, { backgroundColor: color + "15" }]}>
+            <Ionicons name={icon} size={16} color={color} />
+          </View>
+        )}
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.count}>
+        <Text style={[styles.count, { color }]}>
           {current}/{total}
         </Text>
       </View>
@@ -34,10 +42,7 @@ export default function ProgressCard({
           <View
             style={[
               styles.progressFill,
-              {
-                width: `${percentage}%`,
-                backgroundColor: color,
-              },
+              { width: `${percentage}%`, backgroundColor: color },
             ]}
           />
         </View>
@@ -50,8 +55,11 @@ export default function ProgressCard({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
+    borderRadius: Radius.lg,
     padding: Spacing.lg,
+    // Claymorphism: thin border
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Shadow.card,
   },
   header: {
@@ -59,17 +67,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: Spacing.md,
   },
-  icon: {
-    fontSize: 18,
+  iconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: Radius.sm,
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.sm,
   },
   title: {
     ...Typography.body,
+    fontWeight: "600",
     flex: 1,
   },
   count: {
-    ...Typography.caption,
-    color: Colors.textTertiary,
+    ...Typography.label,
+    fontWeight: "700",
   },
   progressContainer: {
     flexDirection: "row",
@@ -78,8 +91,8 @@ const styles = StyleSheet.create({
   },
   progressBg: {
     flex: 1,
-    height: 8,
-    backgroundColor: Colors.borderLight,
+    height: 10,
+    backgroundColor: Colors.divider,
     borderRadius: Radius.pill,
     overflow: "hidden",
   },
@@ -89,7 +102,8 @@ const styles = StyleSheet.create({
   },
   percentage: {
     ...Typography.label,
-    minWidth: 40,
+    minWidth: 44,
     textAlign: "right",
+    fontWeight: "700",
   },
 });

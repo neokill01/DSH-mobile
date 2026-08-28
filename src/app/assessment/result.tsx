@@ -14,15 +14,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import { getRepository } from "@/lib/repository";
 import type { AssessmentResult as ResultType } from "@/types/database";
+import GradientButton from "@/components/ui/GradientButton";
+import Card from "@/components/ui/Card";
 
-const BAND_DESCRIPTIONS: Record<number, { label: string; desc: string; color: string }> = {
-  0: { label: "Band 0", desc: "零基础（0~500词）", color: Colors.textMuted },
-  1: { label: "Band 1", desc: "入门级（500~1000词）", color: Colors.warning },
-  2: { label: "Band 2", desc: "基础交流（1000~2000词）", color: Colors.gold },
-  3: { label: "Band 3", desc: "日常阅读（2000~3500词）", color: Colors.primary },
-  4: { label: "Band 4", desc: "大学水平（3500~4500词）", color: Colors.success },
-  5: { label: "Band 5", desc: "高级水平（4500~5500词）", color: Colors.accent },
-  6: { label: "Band 6", desc: "精通水平（5500+词）", color: Colors.primaryDark },
+const BAND_DESCRIPTIONS: Record<number, { label: string; desc: string; backgroundColor: string; color: string }> = {
+  0: { label: "Band 0", desc: "零基础（0~500词）", backgroundColor: Colors.textMuted, color: Colors.textMuted },
+  1: { label: "Band 1", desc: "入门级（500~1000词）", backgroundColor: Colors.danger, color: Colors.danger },
+  2: { label: "Band 2", desc: "基础交流（1000~2000词）", backgroundColor: Colors.gold, color: Colors.gold },
+  3: { label: "Band 3", desc: "日常阅读（2000~3500词）", backgroundColor: Colors.primary, color: Colors.primary },
+  4: { label: "Band 4", desc: "大学水平（3500~4500词）", backgroundColor: Colors.success, color: Colors.success },
+  5: { label: "Band 5", desc: "高级水平（4500~5500词）", backgroundColor: Colors.pink, color: Colors.pink },
+  6: { label: "Band 6", desc: "精通水平（5500+词）", backgroundColor: Colors.purple, color: Colors.purple },
 };
 
 export default function AssessmentResultScreen() {
@@ -82,22 +84,24 @@ export default function AssessmentResultScreen() {
 
       <View style={styles.content}>
         {/* Band 徽章 */}
-        <View style={[styles.bandBadge, { backgroundColor: bandInfo.color }]}>
+        <View
+          style={[styles.bandBadge, { backgroundColor: bandInfo.backgroundColor, borderColor: bandInfo.color }]}
+        >
           <Text style={styles.bandLabel}>{bandInfo.label}</Text>
         </View>
         <Text style={styles.bandDesc}>{bandInfo.desc}</Text>
 
         {/* 词汇量数字 */}
-        <View style={styles.vocabCard}>
+        <Card variant="elevated" padding={Spacing.xxl} style={styles.vocabCard}>
           <Text style={styles.vocabLabel}>词汇量估计</Text>
           <Text style={styles.vocabNumber}>{result.vocabularyEstimate.toLocaleString()}</Text>
           <Text style={styles.vocabCI}>
             置信区间：{result.ciLower.toLocaleString()} ~ {result.ciUpper.toLocaleString()}
           </Text>
-        </View>
+        </Card>
 
         {/* 统计数据 */}
-        <View style={styles.statsRow}>
+        <Card padding={Spacing.lg} style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{result.totalQuestions}</Text>
             <Text style={styles.statLabel}>总题数</Text>
@@ -112,7 +116,7 @@ export default function AssessmentResultScreen() {
             <Text style={styles.statValue}>{Math.round(result.accuracy * 100)}%</Text>
             <Text style={styles.statLabel}>正确率</Text>
           </View>
-        </View>
+        </Card>
 
         {/* 推荐课程 */}
         <View style={styles.recommendCard}>
@@ -138,9 +142,9 @@ export default function AssessmentResultScreen() {
 
       {/* 底部按钮 */}
       <View style={styles.bottomBtns}>
-        <Pressable style={styles.primaryBtn} onPress={() => router.replace("/")}>
-          <Text style={styles.primaryBtnText}>开始学习</Text>
-        </Pressable>
+        <GradientButton size="lg" onPress={() => router.replace("/")}>
+          开始学习
+        </GradientButton>
         <Pressable style={styles.secondaryBtn} onPress={() => router.back()}>
           <Text style={styles.secondaryBtnText}>重新测评</Text>
         </Pressable>
@@ -164,12 +168,14 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   closeBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.surface,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Shadow.soft,
   },
   content: {
@@ -183,6 +189,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
     marginBottom: Spacing.md,
   },
   bandLabel: {
@@ -196,13 +203,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   vocabCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.xl,
-    padding: Spacing.xxl,
+    borderWidth: 1,
+    borderColor: Colors.border,
     alignItems: "center",
     width: "100%",
     marginBottom: Spacing.lg,
-    ...Shadow.card,
   },
   vocabLabel: {
     ...Typography.caption,
@@ -221,12 +226,10 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: "row",
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
     width: "100%",
     marginBottom: Spacing.lg,
-    ...Shadow.soft,
   },
   statItem: { flex: 1, alignItems: "center" },
   statDivider: { width: 1, backgroundColor: Colors.divider },
@@ -244,7 +247,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: Colors.primaryBg,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
+    borderWidth: 1,
+    borderColor: Colors.primary,
     padding: Spacing.lg,
     width: "100%",
     gap: Spacing.md,
@@ -263,7 +268,7 @@ const styles = StyleSheet.create({
   },
   noteCard: {
     backgroundColor: Colors.surfaceAlt,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
     padding: Spacing.lg,
     width: "100%",
   },
@@ -280,21 +285,8 @@ const styles = StyleSheet.create({
   bottomBtns: {
     gap: Spacing.md,
   },
-  primaryBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.lg,
-    paddingVertical: Spacing.xl,
-    alignItems: "center",
-    ...Shadow.button,
-  },
-  primaryBtnText: {
-    ...Typography.body,
-    color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: 18,
-  },
   secondaryBtn: {
-    borderRadius: Radius.lg,
+    borderRadius: Radius.pill,
     paddingVertical: Spacing.lg,
     alignItems: "center",
     borderWidth: 1.5,
@@ -309,7 +301,7 @@ const styles = StyleSheet.create({
   errorText: { ...Typography.caption, color: Colors.danger, textAlign: "center" },
   retryBtn: {
     backgroundColor: Colors.primary,
-    borderRadius: Radius.md,
+    borderRadius: Radius.pill,
     paddingHorizontal: Spacing.xxl,
     paddingVertical: Spacing.md,
   },

@@ -12,6 +12,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
+import Badge from "@/components/ui/Badge";
 import { getRepository } from "@/lib/repository";
 import type { AssessmentQuestion } from "@/types/database";
 
@@ -112,20 +113,17 @@ export default function AssessmentTestingScreen() {
 
       {/* 进度条 */}
       <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: `${(currentIndex / totalQuestions) * 100}%` }]} />
+        <View
+          style={[styles.progressFill, { width: `${(currentIndex / totalQuestions) * 100}%`, backgroundColor: Colors.primary }]}
+        />
       </View>
 
       {/* 题目类型标签 */}
-      <View style={styles.typeTag}>
-        <Ionicons
-          name={question.type === "real_word" ? "language" : "help-circle"}
-          size={14}
-          color={Colors.primary}
-        />
-        <Text style={styles.typeTagText}>
-          {question.type === "real_word" ? "真实词汇" : "词汇辨析"}
-        </Text>
-      </View>
+      <Badge
+        label={question.type === "real_word" ? "真实词汇" : "词汇辨析"}
+        variant="primary"
+        size="md"
+      />
 
       {/* 题目单词 */}
       <View style={styles.questionCard}>
@@ -214,19 +212,21 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.surface,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Shadow.soft,
   },
   progressInfo: { alignItems: "center" },
   progressLabel: { ...Typography.caption, fontSize: 12 },
   progressCount: { ...Typography.body, fontWeight: "700" },
   progressTrack: {
-    height: 6,
+    height: 8,
     borderRadius: Radius.pill,
     backgroundColor: Colors.divider,
     overflow: "hidden",
@@ -235,28 +235,15 @@ const styles = StyleSheet.create({
   progressFill: {
     height: "100%",
     borderRadius: Radius.pill,
-    backgroundColor: Colors.primary,
-  },
-  typeTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.xs,
-    alignSelf: "flex-start",
-    backgroundColor: Colors.primaryBg,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.pill,
-    marginBottom: Spacing.lg,
-  },
-  typeTagText: {
-    ...Typography.label,
-    color: Colors.primary,
   },
   questionCard: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.xl,
+    borderWidth: 1,
+    borderColor: Colors.border,
     padding: Spacing.xxl,
     alignItems: "center",
+    marginTop: Spacing.lg,
     marginBottom: Spacing.xl,
     ...Shadow.card,
   },
@@ -281,7 +268,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
-    borderWidth: 2,
+    minHeight: 56,
+    borderWidth: 1,
     borderColor: Colors.border,
     gap: Spacing.md,
   },
@@ -298,10 +286,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.dangerBg,
   },
   optionIndex: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: Colors.divider,
+    borderWidth: 1,
+    borderColor: Colors.border,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -339,7 +329,7 @@ const styles = StyleSheet.create({
   },
   retryBtn: {
     backgroundColor: Colors.primary,
-    borderRadius: Radius.md,
+    borderRadius: Radius.pill,
     paddingHorizontal: Spacing.xxl,
     paddingVertical: Spacing.md,
   },

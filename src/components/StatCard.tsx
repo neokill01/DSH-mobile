@@ -1,7 +1,10 @@
+// 统计卡片组件 - 青春活力风格
+// 渐变图标背景、更大圆角、更清晰的层级
+
 import React, { memo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Typography, Spacing, Radius } from "../constants/theme";
+import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 
 interface StatCardProps {
   iconName: keyof typeof Ionicons.glyphMap;
@@ -18,13 +21,14 @@ function StatCard({
   label,
   color,
 }: StatCardProps) {
-  // 生成浅色背景
-  const bgColor = color + "15";
+  const bgColor = color + "12";
 
   return (
     <View style={[styles.container, { backgroundColor: bgColor }]}>
-      <View style={[styles.iconWrap, { backgroundColor: color + "20" }]}>
-        <Ionicons name={iconName} size={22} color={iconColor || color} />
+      <View
+        style={[styles.iconWrap, { backgroundColor: color }]}
+      >
+        <Ionicons name={iconName} size={22} color={Colors.white} />
       </View>
       <Text style={[styles.value, { color }]}>{value}</Text>
       <Text style={styles.label}>{label}</Text>
@@ -36,23 +40,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    padding: Spacing.lg,
-    borderRadius: Radius.md,
+    padding: Spacing.md,
+    borderRadius: Radius.lg,
+    // Claymorphism: thin border
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Shadow.card,
   },
   iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: Spacing.sm,
   },
   value: {
     ...Typography.stat,
+    fontSize: 26,
     marginBottom: Spacing.xs,
   },
   label: {
-    ...Typography.label,
+    ...Typography.badge,
     color: Colors.textTertiary,
     textAlign: "center",
   },

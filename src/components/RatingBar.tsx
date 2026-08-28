@@ -1,4 +1,5 @@
-// 四档评分按钮：忘记 / 模糊 / 记得 / 轻松
+// 四档评分按钮：忘记了 / 有点模糊 / 记得 / 太简单
+// 青春活力风格：渐变背景、更大圆角、更弹的动画
 
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { RATINGS } from "@/constants/ratings";
@@ -19,13 +20,18 @@ export function RatingBar({ onRate, disabled }: Props) {
           onPress={() => onRate(r.value)}
           style={({ pressed }) => [
             styles.btn,
-            { backgroundColor: r.color },
+            { borderWidth: 1, borderColor: r.color },
             pressed && styles.pressed,
             disabled && styles.disabled,
           ]}
         >
-          <Text style={styles.label}>{r.label}</Text>
-          <Text style={styles.hint}>{r.hint}</Text>
+          <View
+            style={[styles.gradient, { backgroundColor: r.color }]}
+          >
+            <Text style={styles.emoji}>{r.emoji}</Text>
+            <Text style={styles.label}>{r.label}</Text>
+            <Text style={styles.hint}>{r.hint}</Text>
+          </View>
         </Pressable>
       ))}
     </View>
@@ -35,32 +41,40 @@ export function RatingBar({ onRate, disabled }: Props) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    gap: Spacing.md,
+    gap: Spacing.sm,
     width: "100%",
   },
   btn: {
     flex: 1,
     borderRadius: Radius.lg,
-    paddingVertical: Spacing.lg,
+    overflow: "hidden",
+    ...Shadow.button,
+  },
+  gradient: {
+    paddingVertical: Spacing.md,
     alignItems: "center",
     gap: Spacing.xs,
-    ...Shadow.button,
+    borderRadius: Radius.lg,
   },
   pressed: {
     opacity: 0.85,
-    transform: [{ scale: 0.95 }],
+    transform: [{ scale: 0.92 }],
   },
   disabled: {
     opacity: 0.5,
   },
+  emoji: {
+    fontSize: 24,
+  },
   label: {
     ...Typography.body,
-    color: "#FFFFFF",
+    color: Colors.white,
     fontWeight: "700",
+    fontSize: 14,
   },
   hint: {
-    ...Typography.label,
-    color: "rgba(255,255,255,0.7)",
+    ...Typography.badge,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 10,
   },
 });

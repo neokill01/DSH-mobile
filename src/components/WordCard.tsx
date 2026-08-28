@@ -1,5 +1,6 @@
 // 单词卡：点击翻面（正面：单词/音标/发音；背面：释义/例句）。
 // 翻转用 RN 原生 Animated（rotateY + 双面交叉淡入淡出）。
+// 青春活力风格：更大圆角、渐变装饰、更丰富的视觉反馈
 
 import { useEffect, useRef } from "react";
 import {
@@ -33,9 +34,10 @@ export function WordCard({ word, flipped, onFlip }: Props) {
   const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(anim, {
+    Animated.spring(anim, {
       toValue: flipped ? 1 : 0,
-      duration: 600,
+      friction: 8,
+      tension: 40,
       useNativeDriver: true,
     }).start();
   }, [flipped, anim]);
@@ -65,14 +67,22 @@ export function WordCard({ word, flipped, onFlip }: Props) {
           { transform: [{ rotateY: frontRotate }], opacity: frontOpacity },
         ] as any}
       >
-        <View style={styles.frontTopDeco} />
+        <View
+          style={[styles.topDeco, { backgroundColor: Colors.primary }]}
+        />
         <Text style={styles.word}>{word.spelling}</Text>
         <Text style={styles.phonetic}>{word.phonetic}</Text>
-        <Pressable style={styles.speakBtn} onPress={speak} hitSlop={10}>
-          <Ionicons name="volume-high" size={22} color={Colors.primary} />
+
+        <Pressable style={styles.speakBtn} onPress={speak} hitSlop={12}>
+          <View
+            style={[styles.speakBtnGradient, { backgroundColor: Colors.primary }]}
+          >
+            <Ionicons name="volume-high" size={22} color={Colors.white} />
+          </View>
         </Pressable>
+
         <View style={styles.hintRow}>
-          <Ionicons name="hand-left-outline" size={12} color={Colors.textHint} />
+          <Ionicons name="hand-left-outline" size={14} color={Colors.textTertiary} />
           <Text style={styles.hint}>点击翻面查看释义</Text>
         </View>
       </Animated.View>
@@ -85,7 +95,9 @@ export function WordCard({ word, flipped, onFlip }: Props) {
           { transform: [{ rotateY: backRotate }], opacity: backOpacity },
         ] as any}
       >
-        <View style={styles.backTopDeco} />
+        <View
+          style={[styles.topDeco, { backgroundColor: Colors.success }]}
+        />
         <View style={styles.defsContainer}>
           {word.definitions.map((d, i) => (
             <View key={i} style={styles.defRow}>
@@ -95,13 +107,13 @@ export function WordCard({ word, flipped, onFlip }: Props) {
                 </View>
                 <Text style={styles.meaning}>{d.meaning}</Text>
               </View>
-              {d.example ? <Text style={styles.example}>"{d.example}"</Text> : null}
+              {d.example ? <Text style={styles.example}>&ldquo;{d.example}&rdquo;</Text> : null}
               {d.translation ? <Text style={styles.translation}>{d.translation}</Text> : null}
             </View>
           ))}
         </View>
         <View style={styles.hintRow}>
-          <Ionicons name="checkmark-circle-outline" size={12} color={Colors.textHint} />
+          <Ionicons name="checkmark-circle-outline" size={14} color={Colors.textTertiary} />
           <Text style={styles.hint}>选择下方按钮评分</Text>
         </View>
       </Animated.View>
@@ -111,7 +123,7 @@ export function WordCard({ word, flipped, onFlip }: Props) {
 
 const styles = StyleSheet.create({
   wrap: {
-    height: 380,
+    height: 420,
     width: "100%",
   },
   face: {
@@ -127,40 +139,29 @@ const styles = StyleSheet.create({
     backfaceVisibility: "hidden",
     backgroundColor: Colors.surface,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Shadow.lifted,
   },
   back: {
     backgroundColor: Colors.surfaceAlt,
   },
-
-  // Decorations
-  frontTopDeco: {
+  topDeco: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: 4,
-    backgroundColor: Colors.primary,
-    borderTopLeftRadius: Radius.xl,
-    borderTopRightRadius: Radius.xl,
-  },
-  backTopDeco: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4,
-    backgroundColor: Colors.success,
+    height: 5,
     borderTopLeftRadius: Radius.xl,
     borderTopRightRadius: Radius.xl,
   },
 
   // Front
   word: {
-    fontSize: 40,
+    fontSize: 42,
     fontWeight: "800",
     color: Colors.text,
-    letterSpacing: -0.5,
+    letterSpacing: -1,
   },
   phonetic: {
     ...Typography.phonetic,
@@ -169,10 +170,16 @@ const styles = StyleSheet.create({
   },
   speakBtn: {
     marginTop: Spacing.xl,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: Colors.primaryBg,
+    borderRadius: 32,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    ...Shadow.button,
+  },
+  speakBtnGradient: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -200,12 +207,11 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
   },
   pos: {
-    ...Typography.label,
+    ...Typography.badge,
     color: Colors.primary,
-    fontWeight: "700",
   },
   meaning: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
     color: Colors.text,
     flexShrink: 1,
@@ -215,7 +221,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontStyle: "italic",
     marginTop: Spacing.xs,
-    lineHeight: 21,
+    lineHeight: 22,
   },
   translation: {
     ...Typography.label,
@@ -229,10 +235,17 @@ const styles = StyleSheet.create({
     bottom: Spacing.xl,
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.xs,
+    gap: Spacing.sm,
+    backgroundColor: Colors.surfaceAlt,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.pill,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   hint: {
-    ...Typography.label,
-    color: Colors.textHint,
+    ...Typography.caption,
+    color: Colors.textTertiary,
+    fontSize: 12,
   },
 });

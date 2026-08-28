@@ -35,7 +35,7 @@ export default function AchievementGrid({ achievements }: AchievementGridProps) 
                 styles.item,
                 !achievement.unlocked && styles.itemLocked,
                 achievement.unlocked && {
-                  borderWidth: 2,
+                  borderWidth: 1,
                   borderColor: rarityColor.border + "40",
                 },
               ]}
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.border,
     marginBottom: Spacing.md,
     ...Shadow.card,

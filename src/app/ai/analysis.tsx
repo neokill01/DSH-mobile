@@ -15,6 +15,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import { getRepository } from "@/lib/repository";
 import type { WrongWord } from "@/types/database";
+import SectionTitle from "@/components/ui/SectionTitle";
+import Card from "@/components/ui/Card";
+import EmptyState from "@/components/ui/EmptyState";
 
 export default function AiAnalysisScreen() {
   const insets = useSafeAreaInsets();
@@ -76,24 +79,33 @@ export default function AiAnalysisScreen() {
         </View>
 
         {/* 选择错词 */}
-        <Text style={styles.sectionTitle}>选择要解析的错词</Text>
+        <SectionTitle icon="sparkles" title="选择要解析的错词" />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wordSelector}>
           {wrongWords.map((w) => (
             <Pressable
               key={w.id}
-              style={[styles.wordChip, selectedWord?.id === w.id && styles.wordChipActive]}
               onPress={() => selectWord(w)}
             >
-              <Text style={[styles.wordChipText, selectedWord?.id === w.id && styles.wordChipTextActive]}>
-                {w.word.spelling}
-              </Text>
+              {selectedWord?.id === w.id ? (
+                <View style={[styles.wordChipActive, { backgroundColor: Colors.primary }]}>
+                  <Text style={styles.wordChipTextActive}>
+                    {w.word.spelling}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.wordChip}>
+                  <Text style={styles.wordChipText}>
+                    {w.word.spelling}
+                  </Text>
+                </View>
+              )}
             </Pressable>
           ))}
         </ScrollView>
 
         {/* 解析内容 */}
         {selectedWord && (
-          <View style={styles.analysisCard}>
+          <Card variant="elevated" style={styles.analysisCard}>
             {analyzing ? (
               <View style={styles.analyzingBox}>
                 <ActivityIndicator size="large" color={Colors.primary} />
@@ -108,12 +120,13 @@ export default function AiAnalysisScreen() {
                 <Text style={styles.analysisText}>{analysis}</Text>
               </View>
             ) : (
-              <View style={styles.emptyAnalysis}>
-                <Ionicons name="bulb-outline" size={32} color={Colors.textMuted} />
-                <Text style={styles.emptyText}>点击上方单词获取 AI 解析</Text>
-              </View>
+              <EmptyState
+                icon="bulb-outline"
+                title="点击上方单词获取 AI 解析"
+                iconColor={Colors.textMuted}
+              />
             )}
-          </View>
+          </Card>
         )}
 
         {/* AI 短文入口 */}
@@ -136,39 +149,41 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.xl },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: Spacing.xl },
   backBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.surface,
+    width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.surface,
     alignItems: "center", justifyContent: "center", ...Shadow.soft,
+    borderWidth: 1, borderColor: Colors.border,
   },
   topTitle: { ...Typography.h3 },
-  sectionTitle: { ...Typography.h3, marginBottom: Spacing.md },
   wordSelector: { marginBottom: Spacing.xl },
   wordChip: {
     paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm,
     borderRadius: Radius.pill, backgroundColor: Colors.surface,
-    marginRight: Spacing.sm, borderWidth: 1.5, borderColor: Colors.border,
+    marginRight: Spacing.sm, borderWidth: 1, borderColor: Colors.border,
   },
-  wordChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  wordChipActive: {
+    paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm,
+    borderRadius: Radius.pill,
+    marginRight: Spacing.sm,
+  },
   wordChipText: { ...Typography.body, fontWeight: "600", color: Colors.text },
-  wordChipTextActive: { color: "#FFFFFF" },
+  wordChipTextActive: { ...Typography.body, fontWeight: "600", color: Colors.white },
   analysisCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.xl, padding: Spacing.xl,
-    minHeight: 200, marginBottom: Spacing.xl, ...Shadow.card,
+    minHeight: 200, marginBottom: Spacing.xl,
   },
   analyzingBox: { alignItems: "center", justifyContent: "center", paddingVertical: Spacing.xxl },
   analyzingText: { ...Typography.caption, color: Colors.textMuted, marginTop: Spacing.md },
   analysisHeader: { flexDirection: "row", alignItems: "center", gap: Spacing.sm, marginBottom: Spacing.lg },
   analysisTitle: { ...Typography.h3 },
-  analysisContent: { 
+  analysisContent: {
     width: "100%",
   },
   analysisText: {
     ...Typography.body, color: Colors.textSecondary, lineHeight: 24,
   },
-  emptyAnalysis: { alignItems: "center", justifyContent: "center", paddingVertical: Spacing.xxl },
-  emptyText: { ...Typography.caption, color: Colors.textMuted, marginTop: Spacing.sm },
   articleCard: {
     flexDirection: "row", alignItems: "center", backgroundColor: Colors.goldBg,
-    borderRadius: Radius.lg, padding: Spacing.lg, gap: Spacing.md,
+    borderRadius: Radius.xl, padding: Spacing.lg, gap: Spacing.md,
+    borderWidth: 1, borderColor: Colors.gold,
   },
   articleInfo: { flex: 1 },
   articleTitle: { ...Typography.body, fontWeight: "600", color: Colors.goldDark },

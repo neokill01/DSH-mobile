@@ -7,9 +7,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { getRepository } from "@/lib/repository";
 import { dateStr } from "@/lib/statsUtil";
-import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
+import { Colors, Typography, Spacing, Radius } from "@/constants/theme";
 import StatCard from "@/components/StatCard";
 import WeeklyChart from "@/components/WeeklyChart";
+import SectionTitle from "@/components/ui/SectionTitle";
+import Card from "@/components/ui/Card";
 import type { DailyCount, Stats } from "@/types/database";
 
 const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
@@ -50,7 +52,7 @@ export default function StatsScreen() {
       ]}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>学习统计</Text>
+      <Text style={styles.title}>📊 学习统计</Text>
 
       {/* 概览卡片 */}
       <View style={styles.summaryRow}>
@@ -78,11 +80,8 @@ export default function StatsScreen() {
       <WeeklyChart data={chartData} />
 
       {/* 本周小结 */}
-      <View style={styles.card}>
-        <View style={styles.sectionTitleRow}>
-          <Ionicons name="document-text" size={18} color={Colors.primary} />
-          <Text style={styles.sectionTitle}>本周总结</Text>
-        </View>
+      <Card style={{ borderWidth: 1, borderColor: Colors.border }}>
+        <SectionTitle icon="document-text" title="本周总结" />
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>新词学习</Text>
           <Text style={styles.summaryValue}>{totalLearned} 个</Text>
@@ -101,11 +100,11 @@ export default function StatsScreen() {
           </Text>
         </View>
 
-        <View style={styles.tipBox}>
-          <Ionicons name="bulb" size={14} color={Colors.gold} />
+        <View style={[styles.tipBox, { backgroundColor: Colors.goldBg }]}>
+          <Ionicons name="bulb" size={14} color={Colors.orange} />
           <Text style={styles.tipText}>坚持就是胜利！每天进步一点点</Text>
         </View>
-      </View>
+      </Card>
     </ScrollView>
   );
 }
@@ -126,24 +125,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
 
-  // Card
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-    ...Shadow.card,
-  },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
-  },
-  sectionTitle: {
-    ...Typography.h3,
-  },
-
   // Summary
   summaryItem: {
     flexDirection: "row",
@@ -151,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: Colors.divider,
   },
   summaryLabel: {
     ...Typography.body,
@@ -168,14 +149,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: Spacing.sm,
-    backgroundColor: Colors.goldBg,
     borderRadius: Radius.sm,
+    borderWidth: 1,
+    borderColor: Colors.gold,
     padding: Spacing.md,
     marginTop: Spacing.lg,
   },
   tipText: {
     ...Typography.caption,
-    color: Colors.gold,
+    color: Colors.orange,
     flex: 1,
   },
 });

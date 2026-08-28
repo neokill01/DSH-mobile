@@ -16,6 +16,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
 import { getRepository } from "@/lib/repository";
 import type { Device } from "@/types/database";
+import SectionTitle from "@/components/ui/SectionTitle";
+import Card from "@/components/ui/Card";
 
 const MAX_DEVICES = 2;
 
@@ -92,16 +94,28 @@ export default function DeviceManagementScreen() {
         </View>
 
         {/* 设备列表 */}
+        <SectionTitle icon="phone-portrait" title="设备管理" />
+
         {devices.map((device) => (
-          <View key={device.id} style={styles.deviceCard}>
+          <Card key={device.id} style={styles.deviceCard}>
             <View style={styles.deviceRow}>
-              <View style={[styles.deviceIcon, device.isCurrent && styles.deviceIconCurrent]}>
-                <Ionicons
-                  name={device.os === "iOS" ? "phone-portrait" : "phone-landscape"}
-                  size={24}
-                  color={device.isCurrent ? "#FFFFFF" : Colors.primary}
-                />
-              </View>
+              {device.isCurrent ? (
+                <View style={[styles.deviceIcon, { backgroundColor: Colors.primary }]}>
+                  <Ionicons
+                    name={device.os === "iOS" ? "phone-portrait" : "phone-landscape"}
+                    size={24}
+                    color="#FFFFFF"
+                  />
+                </View>
+              ) : (
+                <View style={styles.deviceIcon}>
+                  <Ionicons
+                    name={device.os === "iOS" ? "phone-portrait" : "phone-landscape"}
+                    size={24}
+                    color={Colors.primary}
+                  />
+                </View>
+              )}
               <View style={styles.deviceInfo}>
                 <Text style={styles.deviceName}>
                   {device.name}
@@ -120,7 +134,7 @@ export default function DeviceManagementScreen() {
                 <Text style={styles.removeBtnText}>移除</Text>
               </Pressable>
             )}
-          </View>
+          </Card>
         ))}
       </ScrollView>
     </View>
@@ -133,25 +147,27 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.xl },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: Spacing.xl },
   backBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.surface,
+    width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.surface,
     alignItems: "center", justifyContent: "center", ...Shadow.soft,
+    borderWidth: 1, borderColor: Colors.border,
   },
   topTitle: { ...Typography.h3 },
   infoCard: {
-    flexDirection: "row", backgroundColor: Colors.primaryBg, borderRadius: Radius.lg,
+    flexDirection: "row", backgroundColor: Colors.primaryBg, borderRadius: Radius.md,
     padding: Spacing.lg, gap: Spacing.md, marginBottom: Spacing.xl,
+    borderWidth: 1, borderColor: Colors.primary,
   },
   infoText: { flex: 1, ...Typography.caption, color: Colors.textSecondary, lineHeight: 20 },
   deviceCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg,
-    marginBottom: Spacing.md, ...Shadow.soft,
+    marginBottom: Spacing.md,
+    borderWidth: 1, borderColor: Colors.border,
   },
   deviceRow: { flexDirection: "row", alignItems: "center", gap: Spacing.md },
   deviceIcon: {
-    width: 48, height: 48, borderRadius: 24, backgroundColor: Colors.primaryBg,
+    width: 48, height: 48, borderRadius: Radius.md, backgroundColor: Colors.primaryBg,
     alignItems: "center", justifyContent: "center",
+    borderWidth: 1, borderColor: Colors.border,
   },
-  deviceIconCurrent: { backgroundColor: Colors.primary },
   deviceInfo: { flex: 1 },
   deviceName: { ...Typography.body, fontWeight: "600" },
   deviceMeta: { ...Typography.caption, color: Colors.textMuted, marginTop: Spacing.xs },

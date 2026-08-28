@@ -13,6 +13,9 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
+import GradientButton from "@/components/ui/GradientButton";
+import SectionTitle from "@/components/ui/SectionTitle";
+import Card from "@/components/ui/Card";
 import { getRepository } from "@/lib/repository";
 import type { ExperienceCourse as CourseType } from "@/types/database";
 
@@ -71,7 +74,7 @@ export default function ExperienceCourseScreen() {
         </View>
 
         {/* 课程卡片 */}
-        <View style={styles.courseCard}>
+        <View style={[styles.courseCard, { backgroundColor: Colors.primary }]}>
           <View style={styles.courseIconWrap}>
             <Ionicons name="rocket" size={32} color="#FFFFFF" />
           </View>
@@ -88,17 +91,19 @@ export default function ExperienceCourseScreen() {
         </View>
 
         {/* 每日任务 */}
-        <Text style={styles.sectionTitle}>每日学习任务</Text>
+        <SectionTitle icon="calendar" title="每日学习任务" />
         {course.dailyProgress.map((day) => (
-          <View key={day.day} style={styles.dayCard}>
+          <Card key={day.day} style={styles.dayCard}>
             <View style={styles.dayHeader}>
-              <View style={[styles.dayBadge, day.completed && styles.dayBadgeCompleted]}>
-                {day.completed ? (
+              {day.completed ? (
+                <View style={[styles.dayBadge, { backgroundColor: Colors.success }]}>
                   <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                ) : (
+                </View>
+              ) : (
+                <View style={styles.dayBadge}>
                   <Text style={styles.dayBadgeText}>D{day.day}</Text>
-                )}
-              </View>
+                </View>
+              )}
               <View style={styles.dayInfo}>
                 <Text style={styles.dayTitle}>第 {day.day} 天</Text>
                 <Text style={styles.dayDesc}>
@@ -109,27 +114,29 @@ export default function ExperienceCourseScreen() {
                 </Text>
               </View>
               {!day.completed && day.day <= course.currentDay && (
-                <Pressable
-                  style={styles.startDayBtn}
+                <GradientButton
+                  size="sm"
+                  fullWidth={false}
                   onPress={() => startDayLearning(day.day)}
+                  style={styles.startDayBtn}
                 >
-                  <Text style={styles.startDayBtnText}>开始</Text>
-                </Pressable>
+                  开始
+                </GradientButton>
               )}
               {day.completed && (
                 <Ionicons name="checkmark-circle" size={24} color={Colors.success} />
               )}
             </View>
-          </View>
+          </Card>
         ))}
 
         {/* 提示信息 */}
-        <View style={styles.tipCard}>
+        <Card variant="outlined" style={styles.tipCard}>
           <Ionicons name="information-circle" size={20} color={Colors.primary} />
           <Text style={styles.tipText}>
             体验课免费 3 天，包含约 100 个核心词汇。完成体验课后可解锁正式课程的完整内容。
           </Text>
-        </View>
+        </Card>
       </ScrollView>
     </View>
   );
@@ -156,24 +163,27 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.surface,
     alignItems: "center",
     justifyContent: "center",
     ...Shadow.soft,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   topTitle: {
     ...Typography.h3,
   },
   courseCard: {
-    backgroundColor: Colors.primary,
     borderRadius: Radius.xl,
     padding: Spacing.xxl,
     alignItems: "center",
     marginBottom: Spacing.xl,
     ...Shadow.lifted,
+    borderWidth: 1,
+    borderColor: Colors.primary,
   },
   courseIconWrap: {
     width: 64,
@@ -186,7 +196,7 @@ const styles = StyleSheet.create({
   },
   courseTitle: {
     ...Typography.h2,
-    color: "#FFFFFF",
+    color: Colors.white,
     marginBottom: Spacing.sm,
   },
   courseDesc: {
@@ -212,16 +222,10 @@ const styles = StyleSheet.create({
     ...Typography.label,
     color: "rgba(255,255,255,0.9)",
   },
-  sectionTitle: {
-    ...Typography.h3,
-    marginBottom: Spacing.md,
-  },
   dayCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
     marginBottom: Spacing.md,
-    ...Shadow.soft,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   dayHeader: {
     flexDirection: "row",
@@ -235,9 +239,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryBg,
     alignItems: "center",
     justifyContent: "center",
-  },
-  dayBadgeCompleted: {
-    backgroundColor: Colors.success,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   dayBadgeText: {
     ...Typography.label,
@@ -255,23 +258,16 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xs,
   },
   startDayBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-  },
-  startDayBtnText: {
-    ...Typography.label,
-    color: "#FFFFFF",
-    fontWeight: "600",
+    borderWidth: 1,
+    borderColor: Colors.primary,
   },
   tipCard: {
     flexDirection: "row",
     backgroundColor: Colors.primaryBg,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
     gap: Spacing.md,
     marginTop: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.primary,
   },
   tipText: {
     flex: 1,

@@ -15,6 +15,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { getRepository } from "@/lib/repository";
 import { Colors, Typography, Spacing, Radius, Shadow } from "@/constants/theme";
+import Badge from "@/components/ui/Badge";
+import SectionTitle from "@/components/ui/SectionTitle";
+import Card from "@/components/ui/Card";
 import type { Stats, WordBook, ExperienceCourse } from "@/types/database";
 
 const GOAL_NEW = 20;
@@ -97,29 +100,33 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <View style={styles.greetingRow}>
-              <Ionicons name={greeting.icon} size={18} color={greeting.color} />
+              <Ionicons name={greeting.icon} size={20} color={greeting.color} />
               <Text style={styles.greeting}>{greeting.text}</Text>
             </View>
-            <Text style={styles.appName}>词记</Text>
+            <Text style={styles.appName}>📚 词记</Text>
           </View>
-          <View style={styles.streakBadge}>
-            <Ionicons name="flame" size={16} color={Colors.gold} />
-            <Text style={styles.streakText}>{stats?.streak ?? 0}天</Text>
-          </View>
+          <Badge
+            label={`${stats?.streak ?? 0}天`}
+            variant="gold"
+            dot
+            size="md"
+          />
         </View>
 
         {/* 词汇量测评入口 */}
         <Pressable style={styles.assessmentCard} onPress={() => router.push("/assessment/start")}>
-          <View style={styles.assessmentLeft}>
-            <View style={styles.assessmentIconWrap}>
-              <Ionicons name="school" size={24} color="#FFFFFF" />
+          <View style={[styles.assessmentGradient, { backgroundColor: Colors.primary }]}>
+            <View style={styles.assessmentLeft}>
+              <View style={styles.assessmentIconWrap}>
+                <Ionicons name="school" size={26} color="#FFFFFF" />
+              </View>
+              <View>
+                <Text style={styles.assessmentTitle}>词汇量测评</Text>
+                <Text style={styles.assessmentDesc}>了解你的真实英语水平</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.assessmentTitle}>词汇量测评</Text>
-              <Text style={styles.assessmentDesc}>了解你的真实英语水平</Text>
-            </View>
+            <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" />
           </View>
-          <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" />
         </Pressable>
 
         {/* 体验课入口（如果未完成体验课） */}
@@ -160,7 +167,9 @@ export default function HomeScreen() {
             <Text style={styles.progressTitle}>学习进度</Text>
           </View>
           <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+            <View
+              style={[styles.progressFill, { width: `${progress}%`, backgroundColor: Colors.primary }]}
+            />
           </View>
           <View style={styles.progressInfo}>
             <Text style={styles.progressText}>
@@ -172,10 +181,7 @@ export default function HomeScreen() {
 
         {/* 今日目标 */}
         <View style={styles.card}>
-          <View style={styles.sectionTitleRow}>
-            <Ionicons name="bar-chart" size={18} color={Colors.primary} />
-            <Text style={styles.sectionTitle}>今日目标</Text>
-          </View>
+          <SectionTitle title="今日目标" icon="bar-chart" />
           <View style={styles.goalItem}>
             <View style={styles.goalHeader}>
               <View style={[styles.goalDot, { backgroundColor: Colors.gold }]} />
@@ -206,25 +212,25 @@ export default function HomeScreen() {
         <View style={styles.quickGrid}>
           <Pressable style={styles.quickItem} onPress={() => router.push("/word/wrong-list")}>
             <View style={[styles.quickIcon, { backgroundColor: Colors.dangerBg }]}>
-              <Ionicons name="alert-circle" size={20} color={Colors.danger} />
+              <Ionicons name="alert-circle" size={24} color={Colors.danger} />
             </View>
             <Text style={styles.quickLabel}>错词本</Text>
           </Pressable>
           <Pressable style={styles.quickItem} onPress={() => router.push("/ai/analysis")}>
             <View style={[styles.quickIcon, { backgroundColor: Colors.primaryBg }]}>
-              <Ionicons name="sparkles" size={20} color={Colors.primary} />
+              <Ionicons name="sparkles" size={24} color={Colors.primary} />
             </View>
             <Text style={styles.quickLabel}>AI解析</Text>
           </Pressable>
           <Pressable style={styles.quickItem} onPress={() => router.push("/settings/device")}>
-            <View style={[styles.quickIcon, { backgroundColor: Colors.goldBg }]}>
-              <Ionicons name="phone-portrait" size={20} color={Colors.gold} />
+            <View style={[styles.quickIcon, { backgroundColor: Colors.orangeBg }]}>
+              <Ionicons name="phone-portrait" size={24} color={Colors.orange} />
             </View>
             <Text style={styles.quickLabel}>设备管理</Text>
           </Pressable>
           <Pressable style={styles.quickItem} onPress={() => router.push("/settings/export")}>
             <View style={[styles.quickIcon, { backgroundColor: Colors.successBg }]}>
-              <Ionicons name="document-text" size={20} color={Colors.success} />
+              <Ionicons name="document-text" size={24} color={Colors.success} />
             </View>
             <Text style={styles.quickLabel}>学习报告</Text>
           </Pressable>
@@ -233,18 +239,30 @@ export default function HomeScreen() {
         {/* 学习/复习按钮 */}
         <View style={styles.actions}>
           <Pressable
-            style={[styles.actionBtn, styles.actionPrimary]}
+            style={({ pressed }) => [
+              styles.actionBtn,
+              styles.actionPrimary,
+              pressed && styles.actionPressed,
+            ]}
             onPress={() => router.push("/review?mode=new")}
           >
-            <Ionicons name="play" size={22} color="#FFFFFF" />
+            <Ionicons name="play" size={22} color={Colors.white} />
             <Text style={styles.actionPrimaryText}>学习新词</Text>
-            <Text style={styles.actionPrimarySub}>今日还需 {Math.max(0, GOAL_NEW - (stats?.todayNew ?? 0))} 词</Text>
+            <Text style={styles.actionPrimarySub}>
+              今日还需 {Math.max(0, GOAL_NEW - (stats?.todayNew ?? 0))} 词
+            </Text>
           </Pressable>
+        </View>
+        <View style={styles.actions}>
           <Pressable
-            style={[styles.actionBtn, stats?.dueCount ?? 0 > 0 ? styles.actionSecondary : styles.actionSecondaryDisabled]}
+            style={({ pressed }) => [
+              styles.actionBtn,
+              stats?.dueCount ?? 0 > 0 ? styles.actionSecondary : styles.actionSecondaryDisabled,
+              pressed && styles.actionPressed,
+            ]}
             onPress={() => router.push("/review?mode=review")}
           >
-            <Ionicons name="refresh" size={22} color={stats?.dueCount ?? 0 > 0 ? Colors.accent : Colors.textMuted} />
+            <Ionicons name="refresh" size={22} color={stats?.dueCount ?? 0 > 0 ? Colors.primary : Colors.textMuted} />
             <Text style={[styles.actionSecondaryText, stats?.dueCount ?? 0 > 0 ? {} : { color: Colors.textMuted }]}>
               复习
             </Text>
@@ -291,20 +309,23 @@ const styles = StyleSheet.create({
   // Header
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: Spacing.xl },
   greetingRow: { flexDirection: "row", alignItems: "center", gap: Spacing.sm, marginBottom: Spacing.xs },
-  greeting: { ...Typography.caption },
+  greeting: { ...Typography.greeting },
   appName: { ...Typography.h1, color: Colors.primary },
-  streakBadge: {
-    flexDirection: "row", alignItems: "center", gap: Spacing.xs,
-    backgroundColor: Colors.goldBg, borderRadius: Radius.pill,
-    paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
-  },
-  streakText: { ...Typography.label, color: Colors.gold, fontWeight: "700" },
 
   // Assessment card
   assessmentCard: {
-    backgroundColor: Colors.primary, borderRadius: Radius.xl, padding: Spacing.lg,
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    marginBottom: Spacing.md, ...Shadow.lifted,
+    borderRadius: Radius.xl,
+    overflow: "hidden",
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    ...Shadow.lifted,
+  },
+  assessmentGradient: {
+    padding: Spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   assessmentLeft: { flexDirection: "row", alignItems: "center", gap: Spacing.md, flex: 1 },
   assessmentIconWrap: {
@@ -318,7 +339,7 @@ const styles = StyleSheet.create({
   experienceCard: {
     backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg,
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    marginBottom: Spacing.md, borderWidth: 1.5, borderColor: Colors.gold, ...Shadow.soft,
+    marginBottom: Spacing.md, borderWidth: 1, borderColor: Colors.gold, ...Shadow.soft,
   },
   expLeft: { flexDirection: "row", alignItems: "center", gap: Spacing.md, flex: 1 },
   expInfo: { flex: 1 },
@@ -331,7 +352,7 @@ const styles = StyleSheet.create({
   courseCard: {
     backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg,
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    marginBottom: Spacing.lg, ...Shadow.soft,
+    marginBottom: Spacing.lg, borderWidth: 1, borderColor: Colors.border, ...Shadow.soft,
   },
   courseLeft: { flexDirection: "row", alignItems: "center", gap: Spacing.md, flex: 1 },
   courseIconWrap: {
@@ -347,20 +368,18 @@ const styles = StyleSheet.create({
   // Progress
   progressCard: {
     backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg,
-    marginBottom: Spacing.lg, ...Shadow.soft,
+    marginBottom: Spacing.lg, borderWidth: 1, borderColor: Colors.border, ...Shadow.soft,
   },
   progressHeader: { marginBottom: Spacing.md },
   progressTitle: { ...Typography.h3 },
   progressTrack: { height: 8, borderRadius: Radius.pill, backgroundColor: Colors.divider, overflow: "hidden" },
-  progressFill: { height: "100%", borderRadius: Radius.pill, backgroundColor: Colors.primary },
+  progressFill: { height: "100%", borderRadius: Radius.pill },
   progressInfo: { flexDirection: "row", justifyContent: "space-between", marginTop: Spacing.sm },
   progressText: { ...Typography.caption },
   masteredText: { ...Typography.caption, color: Colors.success, fontWeight: "600" },
 
   // Card generic
-  card: { backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg, marginBottom: Spacing.lg, ...Shadow.soft },
-  sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: Spacing.sm, marginBottom: Spacing.lg },
-  sectionTitle: { ...Typography.h3 },
+  card: { backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg, marginBottom: Spacing.lg, borderWidth: 1, borderColor: Colors.border, ...Shadow.soft },
 
   // Goals
   goalItem: { marginBottom: Spacing.md },
@@ -374,28 +393,46 @@ const styles = StyleSheet.create({
 
   // Quick grid
   quickGrid: { flexDirection: "row", justifyContent: "space-between", marginBottom: Spacing.xl },
-  quickItem: { alignItems: "center", gap: Spacing.xs, flex: 1 },
+  quickItem: { alignItems: "center", gap: Spacing.sm, flex: 1 },
   quickIcon: {
-    width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: Spacing.xs,
+    width: 60, height: 60, borderRadius: 30, borderWidth: 1, borderColor: Colors.border,
+    alignItems: "center", justifyContent: "center", marginBottom: Spacing.xs,
   },
   quickLabel: { ...Typography.label, color: Colors.textSecondary },
 
   // Actions
-  actions: { flexDirection: "row", gap: Spacing.md },
-  actionBtn: { flex: 1, borderRadius: Radius.lg, paddingVertical: Spacing.xl, alignItems: "center", gap: Spacing.xs },
-  actionPrimary: { backgroundColor: Colors.primary, ...Shadow.button },
-  actionSecondary: { backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.accentBg },
-  actionSecondaryDisabled: { backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.divider },
-  actionPrimaryText: { ...Typography.body, color: "#FFFFFF", fontWeight: "700" },
-  actionPrimarySub: { ...Typography.label, color: "rgba(255,255,255,0.7)" },
-  actionSecondaryText: { ...Typography.body, color: Colors.accent, fontWeight: "700" },
-  actionSecondarySub: { ...Typography.label, color: Colors.textMuted },
+  actions: { flexDirection: "row", gap: Spacing.md, marginBottom: Spacing.md },
+  actionBtn: { flex: 1, borderRadius: Radius.pill, paddingVertical: Spacing.lg, alignItems: "center", gap: Spacing.xs },
+  actionPrimary: {
+    backgroundColor: Colors.primary,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    ...Shadow.button,
+  },
+  actionSecondary: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  actionSecondaryDisabled: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.divider,
+  },
+  actionPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
+  },
+  actionPrimaryText: { ...Typography.body, color: Colors.white, fontWeight: "700" },
+  actionPrimarySub: { ...Typography.badge, color: "rgba(255,255,255,0.8)" },
+  actionSecondaryText: { ...Typography.body, color: Colors.primary, fontWeight: "700" },
+  actionSecondarySub: { ...Typography.badge, color: Colors.textMuted },
 
   // Modal
   modalMask: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "flex-end" },
   modalSheet: {
     backgroundColor: Colors.surface, borderTopLeftRadius: Radius.xl, borderTopRightRadius: Radius.xl,
-    padding: Spacing.xl, paddingBottom: 40,
+    padding: Spacing.xl, paddingBottom: 40, borderWidth: 1, borderColor: Colors.border,
   },
   modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: Colors.divider, alignSelf: "center", marginBottom: Spacing.lg },
   modalTitle: { ...Typography.h3, marginBottom: Spacing.lg },
